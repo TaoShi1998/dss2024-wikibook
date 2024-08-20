@@ -9,7 +9,7 @@ cargo install mdbook  ## install mdBook
 ## Read the Wikibook on Localhost
 ```
 git clone https://github.com/TaoShi1998/dss2024-wikibook.git
-cd dss2024-wikibook
+cd dss2024-wikibook-main
 mdbook serve --open
 ```
 
