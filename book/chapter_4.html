@@ -1,0 +1,553 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Diffusion Models - Seminar in Data Science and Information Technology 2024 Wikibook</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Sparse Representation</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Variational Autoencoders</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Generative Adversarial Networks</a></li><li class="chapter-item expanded "><a href="chapter_4.html" class="active"><strong aria-hidden="true">4.</strong> Diffusion Models</a></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Transformers</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> White-Box Transformers</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Parameter Efficient Fine-Tuning</a></li><li class="chapter-item expanded "><a href="chapter_8.html"><strong aria-hidden="true">8.</strong> Image-Text Pretraining: CLIP</a></li><li class="chapter-item expanded "><a href="chapter_9.html"><strong aria-hidden="true">9.</strong> Graph Representation Learning</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Seminar in Data Science and Information Technology 2024 Wikibook</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="diffusion-models"><a class="header" href="#diffusion-models">Diffusion Models</a></h1>
+<h2 id="1-overview"><a class="header" href="#1-overview">1. Overview</a></h2>
+<p>Diffusion models have emerged as a highly influential and impactful technique for image generation over the past decade. They outperform the previous state-of-the-art GANs across many benchmarks and become the preferred choice for generative modeling, especially in visual domains. Notable examples include Google's ImageGen for text-to-image generation and OpenAI's DALL.E 2. Recently, the application of diffusion models has expanded dramatically across various tasks, mirroring the widespread adoption of GANs seen between 2017 and 2020 <a href="#1">[1]</a>.</p>
+<p>Many of the fundamental concepts behind diffusion models are similar to those found in earlier generative models we've discussed in this book, such as generative adversarial network (GANs) and variational autoencoders (VAEs). Since the existing generative models often suffer from training instability and provide approximate likelihoods, developing diffusion models to generate high-quality samples and offer more stable training dynamics is quite significant.</p>
+<p>In this <strong>Chapter</strong>, we will dive into the diffusion models, including the theory behind how they work and practical example of how to build the model.</p>
+<p>In <strong>Section 1</strong>, we give a brief overview of the diffusion models and illustrate the learning goals of this chapter. This technique is based on the idea of iteratively adding noise to an image and then training a model to remove the noise, giving us the ability to transform pure noise into realistic samples.</p>
+<p><strong>Section 2</strong> introduces the background of the diffusion models, offering the mathematical concepts needed to understand the methodology of this model.</p>
+<p>In <strong>Section 3</strong>, we provide a detailed explanation of diffusion models, covering problem formulation and derivation of solutions.</p>
+<p>In <strong>Section 4</strong>, we walk through a sample implementation and usage demo of diffusion models.</p>
+<p><strong>Section 5</strong> focuses on discussion on diffusion models, covering when to use them, their relationship to other methods, derived algorithms, and impactful applications.</p>
+<h3 id="learning-goals"><a class="header" href="#learning-goals">Learning goals:</a></h3>
+<p>The topic you are presenting may be very big. Give a preview on what would be covered in this chapter (e.g. the scope).</p>
+<ul>
+<li>Understand the underlying principles and components that define a diffusion model.</li>
+<li>See how the forward process and reverse process are used in the model.</li>
+<li>Implement a demo of diffusion models.</li>
+<li>See the impactful application works related to diffusion models.</li>
+</ul>
+<h2 id="2-background"><a class="header" href="#2-background">2. Background</a></h2>
+<p>Generative AI refers to a branch of artificial intelligence <a href="#2">[2]</a> that focuses on creating models and algorithms capable of generating new, original content, such as images, text, music, and even videos. Unlike traditional AI models that are trained to perform specific tasks, generative AI models aim to learn and mimic patterns from existing data to generate new, unique outputs. For example, if I train a model on a dataset of images of cats, I can then use that model to generate new images of cats that look like they could have come from the original dataset. This is a powerful idea, and it has a wide range of applications, from creating novel images and videos to generating text with a specific style <a href="#3">[3]</a>. The two prominent generative models, namely, generative adversarial networks (GANs) and variational autoencoders (VAEs), have gained substantial recognition. GANs have exhibited versatility across various applications, yet their training complexity and limited output diversity, caused by challenges like mode collapse and gradient vanishing, have been evident. On the other hand, VAEs, while having a strong theoretical foundation, encounter difficulties in devising effective loss functions, resulting in suboptimal outputs.</p>
+<p>Another category of techniques, inspired by probabilistic likelihood estimation and drawing parallels from physical phenomena, has emerged—these are known as diffusion models. Diffusion models are a relatively novel class of generative models that draw inspiration from physical processes like the diffusion of particles and concepts from information theory. They aim to generate data by iteratively transforming noise into structured information, essentially reversing the process of noise introduction. Indeed, the name 'diffusion' takes inspiration from the well-studied property of thermodynamic diffusion: an important link was made between this purely physical field and deep learning in 2015. <a href="#4">[4]</a> Important progress was also being made in the field of score-based generative models,<a href="#5">[5]</a> a branch of energy-based modeling that directly estimates the gradient of the log distribution (also known as the score function) in order to train the model, as an alternative to using contrastive divergence. In particular, Yang Song and Stefano Ermon <a href="#6">[6]</a> used multiple scales of noise perturbations applied to the raw data to ensure the model—a noise conditional score network (NCSN)—performs well on regions of low data density. The breakthrough diffusion model paper came in the summer of 2020. <a href="#7">[7]</a> Standing on the shoulders of earlier works, the paper uncovers a deep connection between diffusion models and score-based generative models, and the authors use this fact to train a diffusion model that can rival GANs across several datasets, called the Denoising Diffusion Probabilistic Model (DDPM).</p>
+<p>To fully understand diffusion models, it is essential to grasp several foundational mathematical and machine learning concepts.</p>
+<h3 id="21-probability-theory"><a class="header" href="#21-probability-theory">2.1 Probability Theory</a></h3>
+<p>Probability theory is the branch of mathematics that deals with the analysis of random phenomena. It provides the foundational framework for understanding how likely events are to occur and is essential for modeling uncertainty. It underpins the noise addition and removal processes in diffusion models, where noise is typically added according to a specific probability distribution (e.g., Gaussian noise).</p>
+<h3 id="22-stochastic-processes"><a class="header" href="#22-stochastic-processes">2.2 Stochastic Processes</a></h3>
+<p>A stochastic process is a collection of random variables indexed by time or space, representing systems that evolve over time in a probabilistic manner. Diffusion models often use stochastic processes to describe the evolution of data as noise is added (forward process) and removed (reverse process).</p>
+<h3 id="23-variational-inference"><a class="header" href="#23-variational-inference">2.3 Variational Inference</a></h3>
+<p>Variational inference is a method for approximating complex probability distributions through optimization. It is commonly used in Bayesian statistics to approximate posterior distributions. Variational inference techniques can be used to optimize the parameters of diffusion models, particularly in Variational Diffusion Models (VDM).</p>
+<h3 id="24-gradient-descent"><a class="header" href="#24-gradient-descent">2.4 Gradient Descent</a></h3>
+<p>Gradient descent is a fundamental optimization algorithm that iteratively adjusts model parameters in the direction of the steepest decrease in the loss function. Effective optimization is crucial for training diffusion models, ensuring that they learn to generate high-quality data by minimizing the loss associated with the noise addition and removal processes.</p>
+<p>Understanding these foundational concepts in probability theory, stochastic processes, variational inference, optimization techniques, neural networks, and generative models is essential for fully understanding diffusion models.</p>
+<h2 id="3-problem-formulation"><a class="header" href="#3-problem-formulation">3. Problem Formulation</a></h2>
+<h3 id="31-forward-diffusion-process"><a class="header" href="#31-forward-diffusion-process">3.1 Forward Diffusion Process</a></h3>
+<p>The forward diffusion process transforms data <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> into a series of increasingly noisy versions <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.1056em;"></span><span class="mord">...</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3303em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>. This process is defined by a Markov chain, where each step adds a small amount of Gaussian noise:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathbf mtight">t</span><span class="mbin mtight">−</span><span class="mord mathbf mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.24em;vertical-align:-0.2561em;"></span><span class="mord"><span class="mord"><span class="mord mathcal" style="margin-right:0.14736em;">N</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2944em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9839em;"><span class="svg-align" style="top:-3.2em;"><span class="pstrut" style="height:3.2em;"></span><span class="mord" style="padding-left:1em;"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.9439em;"><span class="pstrut" style="height:3.2em;"></span><span class="hide-tail" style="min-width:1.02em;height:1.28em;"><svg xmlns="http://www.w3.org/2000/svg" width='400em' height='1.28em' viewBox='0 0 400000 1296' preserveAspectRatio='xMinYMin slice'><path d='M263,681c0.7,0,18,39.7,52,119 c34,79.3,68.167,158.7,102.5,238c34.3,79.3,51.8,119.3,52.5,120 c340,-704.7,510.7,-1060.3,512,-1067 l0 -0 c4.7,-7.3,11,-11,19,-11 H40000v40H1012.3 s-271.3,567,-271.3,567c-38.7,80.7,-84,175,-136,283c-52,108,-89.167,185.3,-111.5,232 c-22.3,46.7,-33.8,70.3,-34.5,71c-4.7,4.7,-12.3,7,-23,7s-12,-1,-12,-1 s-109,-253,-109,-253c-72.7,-168,-109.3,-252,-110,-252c-10.7,8,-22,16.7,-34,26 c-22,17.3,-33.3,26,-34,26s-26,-26,-26,-26s76,-59,76,-59s76,-60,76,-60z M1001 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2561em;"><span></span></span></span></span></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathbf mtight">t</span><span class="mbin mtight">−</span><span class="mord mathbf mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord text"><span class="mord textbf">I</span></span><span class="mclose">)</span></span></span></span></span></span></p>
+<p>Here, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a variance schedule, often linearly increasing from a small value to a larger value over time steps <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span>. <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.14736em;">N</span></span></span></span> denotes a normal (Gaussian) distribution.</p>
+<p>The marginal distribution after <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> steps can be derived as:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0928em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord"><span class="mord mathcal" style="margin-right:0.14736em;">N</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2944em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8428em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5678em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord">ˉ</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0037em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.8028em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702 c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14 c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54 c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10 s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429 c69,-144,104.5,-217.7,106.5,-221 l0 -0 c5.3,-9.3,12,-14,20,-14 H400000v40H845.2724 s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7 c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1972em;"><span></span></span></span></span></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathbf mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5678em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord">ˉ</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0037em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord text"><span class="mord textbf">I</span></span><span class="mclose">)</span><span class="mpunct">,</span></span></span></span></span></span></p>
+<p>where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0037em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7178em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5678em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord">ˉ</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0037em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.4477em;vertical-align:-0.9671em;"></span><span class="mord"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4806em;"><span style="top:-2.1329em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop op-symbol small-op">∏</span></span></span><span style="top:-3.95em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9671em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0037em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>. This equation shows that <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a noisy version of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, with noise increasing over time.</p>
+<h3 id="32-reverse-diffusion-process"><a class="header" href="#32-reverse-diffusion-process">3.2 Reverse Diffusion Process</a></h3>
+<p>The reverse process aims to denoise <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> to recover <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6528em;vertical-align:-0.2083em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span></span></span></span>, removing the noise added in the forward process. The reverse process is also represented as a Markov chain, but it works backwards:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord"><span class="mord mathcal" style="margin-right:0.14736em;">N</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">μ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord">Σ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">t</span><span class="mclose">))</span></span></span></span></span></span></p>
+<p>By minimizing the difference between the true reverse process and the learned reverse process, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">μ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord">Σ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> are parameters of the Gaussian distribution, typically modeled by neural networks and learned in the training.</p>
+<h3 id="33-training-procedure"><a class="header" href="#33-training-procedure">3.3 Training Procedure</a></h3>
+<ul>
+<li>
+<p>Start with a dataset of real samples <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>.</p>
+</li>
+<li>
+<p>Add noise to the data to create noisy versions <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5944em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> at different steps.</p>
+</li>
+<li>
+<p>Use a neural network to predict the noise added at each step.</p>
+</li>
+<li>
+<p>Calculate the loss between the true noise and the predicted noise. Use a loss function to measure how well the model can predict the noise added at each step. A common loss function is:</p>
+</li>
+</ul>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:3.0954em;vertical-align:-1.2671em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283em;"><span style="top:-1.8829em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2671em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathbb">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.5198em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span><span class="mopen mtight">(</span><span class="mord mtight"><span class="mord mathbf mtight">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2963em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mord mtight">∣</span><span class="mord mtight"><span class="mord mathbf mtight">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3173em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3552em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">[</span></span><span class="mord">∥</span><span class="mord mathnormal">ϵ</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">ϵ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathbf">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mord"><span class="mord">∥</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">]</span></span></span></span></span></span></span></p>
+<p>where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">ϵ</span></span></span></span> is the true noise, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">ϵ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is the predicted noise by the model.</p>
+<ul>
+<li>Adjust the model parameters to minimize the loss using gradient descent.</li>
+</ul>
+<p>Diffusion models offer a robust framework for generative modeling by learning to reverse a noisy process. By carefully designing the forward and reverse processes and using effective training strategies, these models can generate high-quality samples from complex data distributions. Understanding the basic principles and mathematical foundations of diffusion models is key to leveraging their full potential in various applications.</p>
+<h2 id="4-code-example"><a class="header" href="#4-code-example">4. Code Example</a></h2>
+<h3 id="41-environment-setup"><a class="header" href="#41-environment-setup">4.1 Environment Setup</a></h3>
+<p>First, we'll need to set up our Python environment. Here's a list of required packages:</p>
+<ul>
+<li><code>pytorch</code></li>
+<li><code>torch</code></li>
+<li><code>torchvision</code></li>
+<li><code>math</code></li>
+<li><code>imageio</code></li>
+<li><code>glob</code></li>
+</ul>
+<p>We can install these packages using pip:</p>
+<pre><code class="language-bash">pip install pytorch torch torchvision math imageio glob
+</code></pre>
+<h3 id="42-define-the-processes-of-the-model"><a class="header" href="#42-define-the-processes-of-the-model">4.2 Define the Processes of the Model</a></h3>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+import pytorch_lightning as pl
+import math
+from modules import *
+
+class DiffusionModel(pl.LightningModule):
+    def __init__(self, in_size, t_range, img_depth):
+        super().__init__()
+        self.beta_small = 1e-4
+        self.beta_large = 0.02
+        self.t_range = t_range
+        self.in_size = in_size
+
+        bilinear = True
+        self.inc = DoubleConv(img_depth, 64)
+        self.down1 = Down(64, 128)
+        self.down2 = Down(128, 256)
+        factor = 2 if bilinear else 1
+        self.down3 = Down(256, 512 // factor)
+        self.up1 = Up(512, 256 // factor, bilinear)
+        self.up2 = Up(256, 128 // factor, bilinear)
+        self.up3 = Up(128, 64, bilinear)
+        self.outc = OutConv(64, img_depth)
+        self.sa1 = SAWrapper(256, 8)
+        self.sa2 = SAWrapper(256, 4)
+        self.sa3 = SAWrapper(128, 8)
+
+    def pos_encoding(self, t, channels, embed_size):
+        inv_freq = 1.0 / (
+            10000
+            ** (torch.arange(0, channels, 2, device=self.device).float() / channels)
+        )
+        pos_enc_a = torch.sin(t.repeat(1, channels // 2) * inv_freq)
+        pos_enc_b = torch.cos(t.repeat(1, channels // 2) * inv_freq)
+        pos_enc = torch.cat([pos_enc_a, pos_enc_b], dim=-1)
+        return pos_enc.view(-1, channels, 1, 1).repeat(1, 1, embed_size, embed_size)
+
+    def forward(self, x, t):
+        """
+        Model is U-Net with added positional encodings and self-attention layers.
+        """
+        x1 = self.inc(x)
+        x2 = self.down1(x1) + self.pos_encoding(t, 128, 16)
+        x3 = self.down2(x2) + self.pos_encoding(t, 256, 8)
+        x3 = self.sa1(x3)
+        x4 = self.down3(x3) + self.pos_encoding(t, 256, 4)
+        x4 = self.sa2(x4)
+        x = self.up1(x4, x3) + self.pos_encoding(t, 128, 8)
+        x = self.sa3(x)
+        x = self.up2(x, x2) + self.pos_encoding(t, 64, 16)
+        x = self.up3(x, x1) + self.pos_encoding(t, 64, 32)
+        output = self.outc(x)
+        return output
+
+    def beta(self, t):
+        return self.beta_small + (t / self.t_range) * (
+            self.beta_large - self.beta_small
+        )
+
+    def alpha(self, t):
+        return 1 - self.beta(t)
+
+    def alpha_bar(self, t):
+        return math.prod([self.alpha(j) for j in range(t)])
+
+    def get_loss(self, batch, batch_idx):
+        """
+        Corresponds to Algorithm 1 from (Ho et al., 2020).
+        """
+        ts = torch.randint(0, self.t_range, [batch.shape[0]], device=self.device)
+        noise_imgs = []
+        epsilons = torch.randn(batch.shape, device=self.device)
+        for i in range(len(ts)):
+            a_hat = self.alpha_bar(ts[i])
+            noise_imgs.append(
+                (math.sqrt(a_hat) * batch[i]) + (math.sqrt(1 - a_hat) * epsilons[i])
+            )
+        noise_imgs = torch.stack(noise_imgs, dim=0)
+        e_hat = self.forward(noise_imgs, ts.unsqueeze(-1).type(torch.float))
+        loss = nn.functional.mse_loss(
+            e_hat.reshape(-1, self.in_size), epsilons.reshape(-1, self.in_size)
+        )
+        return loss
+</code></pre>
+<h3 id="43-training-step"><a class="header" href="#43-training-step">4.3 Training Step</a></h3>
+<pre><code class="language-python">  def training_step(self, batch, batch_idx):
+        loss = self.get_loss(batch, batch_idx)
+        self.log("train/loss", loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        loss = self.get_loss(batch, batch_idx)
+        self.log("val/loss", loss)
+        return
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=2e-4)
+        return optimizer
+
+</code></pre>
+<h3 id="44-sampling"><a class="header" href="#44-sampling">4.4 Sampling</a></h3>
+<p>Generate new images using the trained model.</p>
+<pre><code class="language-python">    # Generate samples from denoising process
+    gen_samples = []\n
+    x = torch.randn((sample_batch_size, train_dataset.depth, train_dataset.size, train_dataset.size))\n
+    sample_steps = torch.arange(model.t_range-1, 0, -1)\n
+    for t in sample_steps:\n
+        x = model.denoise_sample(x, t)\n
+        if t % 50 == 0:\n
+            gen_samples.append(x)\n
+    for _ in range(n_hold_final):\n
+        gen_samples.append(x)\n
+    gen_samples = torch.stack(gen_samples, dim=0).moveaxis(2, 4).squeeze(-1)\n
+    gen_samples = (gen_samples.clamp(-1, 1) + 1) / 2
+</code></pre>
+<h3 id="45-run-the-demo"><a class="header" href="#45-run-the-demo">4.5 Run the Demo</a></h3>
+<ul>
+<li><strong>Download the Dataset</strong>:
+<pre><code class="language-python">import torch
+from torch.utils.data import Dataset
+from torchvision.datasets import MNIST, FashionMNIST, CIFAR10
+from torchvision import transforms
+
+
+class DiffSet(Dataset):
+    def __init__(self, train, dataset="MNIST"):
+        transform = transforms.Compose([transforms.ToTensor()])
+
+        datasets = {
+            "MNIST": MNIST,
+            "Fashion": FashionMNIST,
+            "CIFAR": CIFAR10,
+        }
+
+        train_dataset = datasets[dataset](
+            "./data", download=True, train=train, transform=transform
+        )
+
+        self.dataset_len = len(train_dataset.data)
+
+        if dataset == "MNIST" or dataset == "Fashion":
+            pad = transforms.Pad(2)
+            data = pad(train_dataset.data)
+            data = data.unsqueeze(3)
+            self.depth = 1
+            self.size = 32
+        elif dataset == "CIFAR":
+            data = torch.Tensor(train_dataset.data)
+            self.depth = 3
+            self.size = 32
+        self.input_seq = ((data / 255.0) * 2.0) - 1.0
+        self.input_seq = self.input_seq.moveaxis(3, 1)
+
+    def __len__(self):
+        return self.dataset_len
+
+   def __getitem__(self, item):
+        return self.input_seq[item]
+
+</code></pre>
+</li>
+<li><strong>Train the Model</strong>: Use the <a href="./entry.ipynb"><code>entry.ipynb</code></a> notebook to train model and sample generated images.</li>
+</ul>
+<h2 id="5-discussion"><a class="header" href="#5-discussion">5. Discussion</a></h2>
+<h3 id="51-advantages"><a class="header" href="#51-advantages">5.1 Advantages</a></h3>
+<h4 id="511-high-quality-generation"><a class="header" href="#511-high-quality-generation">5.1.1 High-Quality Generation</a></h4>
+<p>One of the standout features of diffusion models is their ability to generate incredibly high-quality images. If you've ever seen those super realistic AI-generated photos and wondered how they were made, diffusion models are often the magic behind them. They excel at capturing fine details and producing images that look almost indistinguishable from real ones. High-quality generation is crucial for applications where realism is key, such as in media and entertainment (think movies and video games), fashion, and even art. When the generated content needs to blend seamlessly with real-world data, diffusion models are a top choice.</p>
+<h4 id="512-stable-training"><a class="header" href="#512-stable-training">5.1.2 Stable Training</a></h4>
+<p>Training machine learning models can sometimes feel like trying to balance on a tightrope. Generative Adversarial Networks (GANs), for instance, are known for their tricky training process, which can be unstable and prone to issues like mode collapse (where the model only produces a limited variety of outputs).</p>
+<p>Diffusion models, on the other hand, offer a much more stable training process. They don't rely on the adversarial setup of GANs (where two networks compete against each other), which means fewer headaches and more consistent results.</p>
+<h4 id="513-flexibility"><a class="header" href="#513-flexibility">5.1.3 Flexibility</a></h4>
+<p>Diffusion models aren't just a one-trick pony. They're highly flexible and can be adapted to generate a variety of data types beyond just images. From audio to text and even more complex data types, diffusion models can handle it all.</p>
+<h3 id="52-limitations"><a class="header" href="#52-limitations">5.2 Limitations</a></h3>
+<h4 id="521-computationally-intensive"><a class="header" href="#521-computationally-intensive">5.2.1 Computationally Intensive</a></h4>
+<p>One of the biggest hurdles you'll face with diffusion models is their demand for computational resources. Training these models involves a large number of steps to add and then remove noise from the data. This process can be quite slow and resource-intensive.
+If you're working with limited computational power or have tight deadlines, diffusion models might not be the best choice. They require significant time and powerful hardware (like GPUs or TPUs) to train effectively. This can be a major barrier for smaller organizations or individual researchers.</p>
+<h4 id="522-complexity-in-implementation"><a class="header" href="#522-complexity-in-implementation">5.2.2 Complexity in Implementation</a></h4>
+<p>Diffusion models are not the simplest models to implement. The process of designing and tuning both the forward (noise addition) and reverse (denoising) steps can be quite complex. This includes carefully choosing the noise schedule and the number of timesteps.</p>
+<h4 id="523-slow-sampling-time"><a class="header" href="#523-slow-sampling-time">5.2.3 Slow Sampling Time</a></h4>
+<p>Generating new data samples with diffusion models is often slower compared to other generative models. Since the reverse process involves iteratively removing noise step-by-step, it can take a considerable amount of time to generate each sample.</p>
+<p>In applications where real-time or near-real-time generation is crucial, such as interactive art or live data augmentation, the slow sampling time can be a significant limitation. This makes diffusion models less suitable for scenarios requiring quick outputs.</p>
+<h4 id="524-hyperparameter-sensitivity"><a class="header" href="#524-hyperparameter-sensitivity">5.2.4 Hyperparameter Sensitivity</a></h4>
+<p>Diffusion models can be quite sensitive to their hyperparameters, such as the number of timesteps, learning rates, and noise schedules. Finding the right set of hyperparameters often requires extensive experimentation and fine-tuning.</p>
+<h3 id="53-comparison-and-relationship-to-other-methods"><a class="header" href="#53-comparison-and-relationship-to-other-methods">5.3 Comparison and Relationship to Other Methods</a></h3>
+<h4 id="531-gans-generative-adversarial-networks"><a class="header" href="#531-gans-generative-adversarial-networks">5.3.1 GANs (Generative Adversarial Networks)</a></h4>
+<ul>
+<li><strong>Similarities:</strong> Both diffusion models and GANs aim to generate high-quality data samples.</li>
+<li><strong>Differences:</strong> GANs use a discriminator to distinguish between real and generated data, while diffusion models rely on a forward and reverse process. GANs can suffer from mode collapse, where the generator produces limited varieties of samples, a problem less prevalent in diffusion models.</li>
+</ul>
+<h4 id="532-vaes-variational-autoencoders"><a class="header" href="#532-vaes-variational-autoencoders">5.3.2 VAEs (Variational Autoencoders)</a></h4>
+<ul>
+<li><strong>Similarities:</strong> Both are probabilistic models and involve learning a latent representation of the data.</li>
+<li><strong>Differences:</strong> VAEs encode data into a latent space and decode it back, optimizing a variational lower bound, while diffusion models work directly in the data space with a series of noising and denoising steps.</li>
+</ul>
+<h3 id="54-important-subsequent-representation-learning-algorithms"><a class="header" href="#54-important-subsequent-representation-learning-algorithms">5.4 Important Subsequent Representation Learning Algorithms</a></h3>
+<ul>
+<li><strong>Score-Based Generative Models:</strong> These models learn a score function (gradient of the data distribution) and use Langevin dynamics to generate samples. They share a conceptual similarity with diffusion models in using gradients for generation.</li>
+<li><strong>Denoising Diffusion Implicit Models (DDIM):</strong> An extension of diffusion models that provides a more efficient sampling process, reducing the number of steps required to generate high-quality samples. DDIM introduceS a deterministic alternative to the stochastic nature of traditional diffusion models. Instead of relying on a stochastic reverse process, DDIM uses a non-Markovian deterministic process for sampling, which significantly reduces the number of steps needed for generation.</li>
+<li><strong>Variational Diffusion Models (VDM):</strong> VDM combines principles from variational inference and diffusion models to create a more flexible and powerful generative model. VDM leverages a variational lower bound to optimize the model, improving both training stability and generation quality.</li>
+<li><strong>Diffusion Image Transformers (DIT):</strong> DIT integrates the power of diffusion models with the versatility of transformers, creating a hybrid approach for image generation. DIT leverages the transformer architecture to model complex dependencies in image data, enhancing the generative capabilities of diffusion models.</li>
+</ul>
+<h3 id="55-impactful-application-works"><a class="header" href="#55-impactful-application-works">5.5 Impactful Application Works</a></h3>
+<h4 id="551-openai-dall-e"><a class="header" href="#551-openai-dall-e">5.5.1 OpenAI DALL-E</a></h4>
+<p>In January 2021, OpenAI released the text-to-image model DALL-E, its name being a play on surrealist artist Salvador Dali and the Pixar animated robot WALL-E. The model was based on a modified version of OpenAI’s remarkable GPT-3 text model, which had been released seven months before. DALL-E was a breakthrough in generative AI, demonstrating artistic abilities most people thought were impossible for a computer to possess.
+The DALL-E model was not open sourced nor released to the public, but it inspired multiple researchers and hobbyists to attempt to replicate the research. The most popular of these models was DALL-E Mini, released in July 2021 (renamed Craiyon a year later at the request of OpenAI), and although it gained a cult following on social media, the quality was considerably poorer than the official DALL-E model. OpenAI published a paper announcing DALL-E 2 in April 2022 <a href="#8">[8]</a>, and the quality was significantly higher, attracting a waitlist of one million people.</p>
+<p>Access was limited to waitlist users until September 2022, due to concerns about AI ethics and safety. Generation of images containing people was initially banned, as were a long list of sensitive words. Researchers identified DALL-E 2 adding the words black or female to some image prompts like a photo of a doctor in a hamfisted attempt to address bias inherited from the dataset (images of doctors on the internet are disproportionally of white males).</p>
+<p>The team added inpainting and outpainting to the user interface in August 2022, which was a further leap forward, garnering attention in the press and on social media. These features allowed users to generate only selected parts of an image or to zoom out by generating around the border of an existing image. However, users have little control over the parameters of the model and could not fine-tune it on their own data. The model would generate garbled text on some images and struggled with realistic depictions of people, generating disfigured or deformed hands, feet, and eyes.</p>
+<h4 id="552-midjourney"><a class="header" href="#552-midjourney">5.5.2 Midjourney</a></h4>
+<p>In July 2022, just three months after the release of DALL-E 2, Midjourney put its v3 model in open beta. This was a uniquely good time to launch an image generation model, because the demonstrations of what DALL-E 2 could do from early users looked like magic, and yet access was initially limited. Eager early-adopters flocked to Midjourney, and its notable fantasy aesthetic gained a cult following among the gaming and digital art crowds, showcased in the <strong><em>now famous image</em></strong>, which won first prize in a digital art competition.</p>
+<p>Midjourney was one of the first viable image models that had a business model and commercial license, making it suitable for more than just experimentation. The subscription model was favored by many artists accustomed to paying monthly for other software like Adobe Photoshop. It also helped the creative process to not be charged per image generated, particularly in the early days when you’d have to try multiple images before you found one that was high-enough quality. If you were a paying customer of Midjourney, you owned the rights to any image generated, unlike DALL-E, where OpenAI was retaining the copyright.</p>
+<p>Unique to Midjourney is its heavy community focus. To use the tool, you must sign into a Discord server and submit your prompt in an open channel or direct message. Given that all image generations are shared in open channels by default, and private mode is available only on the most expensive plan, the vast majority of images created through Midjourney are available for others to learn from. This led to rapid copying and iteration between users, making it easy for novices to quickly learn from others. As early as July 2022, the Discord community was nearing 1 million people, and a year later, there were more than 13 million members.</p>
+<p>When you find an image you like, you can click a button to upscale the image (make it higher resolution) for use. Many have speculated that this procedure acts as training data for reinforcement learning, similar to <strong><em>reinforcement learning from human feedback (RLHF)</em></strong>, the method touted as the key to success of ChatGPT. In addition, the team regularly asks for ratings of images generated by newer models in order to improve the performance. Midjourney released v4 of its model in November 2022, followed by v5 in March 2023 and v6 in December 2023.</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<p><a id="1">[1]</a> Foster, David. Generative Deep Learning: Teaching Machines to Paint, Write, Compose, and Play. 2nd ed., O’Reilly Media, 2023.</p>
+<p><a id="2">[2]</a> Kulkarni, Akshay, et al. “Introduction to Generative AI.” Applied Generative AI for Beginners, Apress, 2023, pp. 1–13.</p>
+<p><a id="3">[3]</a> Sanseviero, Omar, et al. Hands-on Generative AI with Transformers and Diffusion Models. O’Reilly Media, 2024.</p>
+<p><a id="4">[4]</a> Jascha Sohl-Dickstein et al. "Deep Unsupervised Learning Using Nonequilibrium Thermodynamics." <em>arXiv preprint arXiv:1503.03585</em> (2015).</p>
+<p><a id="5">[5]</a> Yang Song and Stefano Ermon. "Generative Modeling by Estimating Gradients of the Data Distribution," <em>arXiv preprint arXiv:1907.05600</em> (2019).</p>
+<p><a id="6">[6]</a> Yang Song and Stefano Ermon, “Improved Techniques for Training Score-Based Generative Models,” <em>arXiv preprint arXiv:2006.09011</em> (2020).</p>
+<p><a id="7">[7]</a> Jonathon Ho et al. "Denoising Diffusion Probabilistic Models." <em>arXiv preprint arXiv:2006.11239</em> (2020).</p>
+<p><a id="8">[8]</a> Chitwan Saharia et al. "Photorealistic Text-to-Image Diffusion Models with Deep Language Understanding." <em>arXiv preprint arXiv:2205.11487</em> (2022).</p>
+<h2 id="external-resources"><a class="header" href="#external-resources">External Resources</a></h2>
+<ul>
+<li><a href="https://openai.com/index/dall-e/">The example of the first version of DALL-E’s capabilities.</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Th%C3%A9%C3%A2tre_D%27op%C3%A9ra_Spatial">The image created by Jason Michael Allen with the generative artificial intelligence platform Midjourney.</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Reinforcement_learning_from_human_feedback">Reinforcement learning from human feedback (RLHF)</a></li>
+</ul>
+<h2 id="author-team"><a class="header" href="#author-team">Author Team</a></h2>
+<p><strong>Chenxingyu Huang</strong>: Finish this whole final project.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="chapter_3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="chapter_5.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="chapter_3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="chapter_5.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

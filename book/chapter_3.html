@@ -1,0 +1,805 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Generative Adversarial Networks - Seminar in Data Science and Information Technology 2024 Wikibook</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Sparse Representation</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Variational Autoencoders</a></li><li class="chapter-item expanded "><a href="chapter_3.html" class="active"><strong aria-hidden="true">3.</strong> Generative Adversarial Networks</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Diffusion Models</a></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Transformers</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> White-Box Transformers</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Parameter Efficient Fine-Tuning</a></li><li class="chapter-item expanded "><a href="chapter_8.html"><strong aria-hidden="true">8.</strong> Image-Text Pretraining: CLIP</a></li><li class="chapter-item expanded "><a href="chapter_9.html"><strong aria-hidden="true">9.</strong> Graph Representation Learning</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Seminar in Data Science and Information Technology 2024 Wikibook</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="generative-adversarial-networks-and-their-applications-in-battery-technology"><a class="header" href="#generative-adversarial-networks-and-their-applications-in-battery-technology">Generative Adversarial Networks and Their Applications in Battery Technology</a></h1>
+<h2 id="1-overview"><a class="header" href="#1-overview">1 Overview</a></h2>
+<p>This tutorial introduces the principles and applications of <a href="https://en.wikipedia.org/wiki/Generative_adversarial_network">Generative Adversarial Networks (GANs)</a>. Focusing on battery management, it reproduces a method for estimating battery <a href="https://en.wikipedia.org/wiki/State_of_charge">State of Charge (SOC)</a> based on GANs and provides guidance on implementing this method in code. The tutorial covers the advantages and disadvantages of GANs, usage tips, future prospects, and challenges, serving as a helpful resource for readers learning about GANs.</p>
+<h3 id="11-original-research-paper"><a class="header" href="#11-original-research-paper">1.1 Original Research Paper</a></h3>
+<p><strong>Version 1:</strong>  Goodfellow I, Pouget-Abadie J, Mirza M, et al.  <a href="https://proceedings.neurips.cc/paper_files/paper/2014/file/5ca3e9b122f61f8f06494c97b1afccf3-Paper.pdf">Generative adversarial nets[J]</a>. Advances in neural information processing systems, 2014, 27.</p>
+<p><strong>Version 2:</strong>  Goodfellow I, Pouget-Abadie J, Mirza M, et al. <a href="https://dl.acm.org/doi/pdf/10.1145/3422622">Generative adversarial networks[J]</a>. Communications of the ACM, 2020, 63(11): 139-144.</p>
+<p><strong>Note:</strong>  There is no substantial difference in principle between the two versions. We recommend using Version 2 because its expressed in a better way.</p>
+<h3 id="12-learning-goals"><a class="header" href="#12-learning-goals">1.2 Learning Goals</a></h3>
+<ol>
+<li>Understand the fundamental concepts and working mechanisms of GANs.</li>
+<li>Learn about the applications of GANs.</li>
+<li>Gain practical tips in implementing GANs-based battery SOC estimator through guided code examples.</li>
+<li>Discuss the future potential and challenges faced by GAN technology.</li>
+<li>Explore the potential of integrating GANs with your research.</li>
+</ol>
+<h2 id="2-background"><a class="header" href="#2-background">2 Background</a></h2>
+<h3 id="21-introduction"><a class="header" href="#21-introduction">2.1 Introduction</a></h3>
+<p><a href="https://en.wikipedia.org/wiki/Generative_adversarial_network"><strong>GANs</strong></a> are a type of <a href="https://en.wikipedia.org/wiki/Unsupervised_learning">unsupervised learning</a> method that has gained significant attention in the field of artificial intelligence and machine learning <a href="#1">[1]</a><a href="#2">[2]</a>. GANs consist of two key components: a <strong>generator</strong> <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span></span></span></span> and a <strong>discriminator</strong> <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span></span>, which work together in a competitive process to generate new samples from real data and distinguish between real and fake sample <a href="#3">[3]</a><a href="#4">[4]</a><a href="#5">[5]</a>. The concept was initially developed by <a href="https://en.wikipedia.org/wiki/Ian_Goodfellow">Ian Goodfellow</a> and his colleagues in June 2014 <a href="#6">[6]</a>. The generator creates new samples from the real data distribution, while the discriminator evaluates the authenticity of the generated samples. Based on the <a href="https://en.wikipedia.org/wiki/Zero-sum_game">zero-sum game</a> theory, GANs generate and discriminate between real and fake samples, with the generator's goal being to produce samples that are identical to real data in order to fool the discriminator. The training process in GANs obeys the <a href="https://en.wikipedia.org/wiki/Minimax_theorem">minimax theorem</a> where the generator tries to maximize the discriminator’s error rate, while the discriminator aims to minimize its classification error. This dynamic pushes the generator to create increasingly realistic data over time.</p>
+<h3 id="22-comparison-to-previous-work"><a class="header" href="#22-comparison-to-previous-work">2.2 Comparison to Previous Work</a></h3>
+<ul>
+<li>
+<p><strong>Comparison to VAE:</strong>
+While both GANs and <a href="https://en.wikipedia.org/wiki/Variational_autoencoder"><strong>Variational Autoencoders (VAEs)</strong></a> are powerful generative models, their approaches to data generation and the underlying principles differ significantly. GANs rely on an adversarial process between the generator and discriminator to improve data generation quality, whereas VAEs use a probabilistic approach to encode and decode data through latent variables. Discriminative models and encoders both take the same input data. However, their outputs differ significantly. The output of a discriminative model is the probability of the input data being authentic, whereas the output of an encoder is a set of latent variables that represent the compressed representation of the input data. Similarly, generative models and recognition models (decoders) share the same output but differ in their inputs. The input to a generative model is random noise, which the model transforms into a realistic data sample. On the other hand, the input to a recognition model is latent variables, which the model decodes back into a representation of the original data.</p>
+</li>
+<li>
+<p><strong>Comparison to PM:</strong>
+Previous work on <a href="https://people.idsia.ch/~juergen/edgedetect/node2.html"><strong>Predictability Minimization (PM)</strong></a> highlights distinct differences in training criteria and the nature of competition when compared to GANs. In GANs, the competition between the generator and discriminator serves as the sole training criterion. The generator aims to produce data that the discriminator cannot distinguish from real data, while the discriminator strives to improve its ability to differentiate between real and generated data. This adversarial process is structured as a minimax game, where each network's performance directly influences the training of the other. In contrast, PM does not use competition as the primary training criterion. Instead, the competition between networks in PM functions more as a regularization technique to enhance the model's performance. PM's learning process is formulated as an optimization problem, where the goal is to minimize the predictability of the latent representations produced by the encoder.</p>
+</li>
+</ul>
+<h3 id="23-pros--cons"><a class="header" href="#23-pros--cons">2.3 Pros &amp; Cons</a></h3>
+<p>The use of GANs has many benefits. One of their primary advantages is that they make learning easier by not requiring explicit inference during training. GANs train the generator and discriminator simultaneously in a minimax game without the need of <a href="https://en.wikipedia.org/wiki/Markov_chain">Markov chain</a>, in contrast to deep graphical models. This may result in improved generalization since it eliminates the need for explicit probability density estimate. Furthermore, GANs are more versatile and adaptive to a range of applications since they do not require an explicit representation of the generative distribution and enable efficient and parallel sampling.</p>
+<p>GANs also have a few serious disadvantages. To get the best results during training, the discriminator <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span></span> and generator <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span></span></span></span> must be in perfect synchronization. The generator may map several alternative values of the random noise vector <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span></span></span></span> to the same output sample <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span> if it is trained too often without updating the discriminator. This problem leads to a lack of diversity in the generated samples, which prevents the model from effectively replicating the true data distribution. It is comparable to the <a href="https://blog.csdn.net/sdnuwjw/article/details/88691504?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522171968301816800226533805%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=171968301816800226533805&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-88691504-null-null.142^v100^pc_search_result_base3&amp;utm_term=helvetica%20scenario&amp;spm=1018.2226.3001.4187">"Helvetica scenario"</a> in which all characters have very identical looks. For a varied set of samples to be produced that can accurately mimic real-world data, the discriminator and generator must work in perfect harmony.</p>
+<h2 id="3-gans-applications"><a class="header" href="#3-gans-applications">3 GANs Applications</a></h2>
+<p>GANs have been widely used in various applications. Their notable progress in <a href="https://en.wikipedia.org/wiki/Computer_vision">computer vision</a> has made possible applications like <a href="https://en.wikipedia.org/wiki/Super-resolution_imaging">super-resolution</a>, style transfer, picture synthesis, and semantic image manipulation <a href="#7">[7]</a>. By generating realistic high-resolution images, GANs have shown remarkable performance in various <a href="https://en.wikipedia.org/wiki/Computer_graphics">computer graphics</a> applications, including face synthesis and image-to-image translation <a href="#6">[6]</a>. Nowozin et al. introduced the concept of training generative neural samplers using variational divergence minimization, highlighting the efficiency of GANs in computing samples and derivatives <a href="#8">[8]</a>. Mescheder et al. further unified VAEs and GANs through Adversarial Variational Bayes (AVB), demonstrating the connection between these two models <a href="#9">[9]</a>. Rosca et al. proposed a fusion of VAEs and GANs by leveraging the hierarchical structure of the generative model, combining the strengths of both approaches <a href="#10">[10]</a>.</p>
+<h3 id="31-gans-applications-in-battery-research"><a class="header" href="#31-gans-applications-in-battery-research">3.1 GANs Applications in Battery Research</a></h3>
+<p>In the field of battery research, GANs have become a potent tool, providing innovative answers to a range of problems pertaining to battery management and diagnostics. By offering a technique for <a href="https://en.wikipedia.org/wiki/Data_augmentation">data augmentation</a> and <a href="https://en.wikipedia.org/wiki/Synthetic_data">synthetic data</a> generation, GANs aid in the production of battery data <a href="#11">[11]</a>. Compared to conventional machine learning methods, GANs perform better in <a href="https://en.wikipedia.org/wiki/Dimensionality_reduction">dimensionality reduction</a>, non-linear fitting, and feature extraction. From input label descriptions, they may produce corresponding battery data, which is especially helpful for battery management applications that forecast battery state and future behaviors <a href="#12">[12]</a><a href="#13">[13]</a><a href="#14">[14]</a><a href="#15">[15]</a>. Based on an examination of 30 recent Google Scholar articles, this background study investigates the various uses of GANs in battery technology.</p>
+<ul>
+<li>
+<p><strong>SOC and SOH Estimation:</strong>
+For <a href="https://en.wikipedia.org/wiki/Lithium-ion_battery">lithium-ion batteries</a> to be managed effectively, <a href="https://en.wikipedia.org/wiki/State_of_charge"><strong>SOC</strong></a> and <a href="https://en.wikipedia.org/wiki/State_of_health"><strong>State of Health (SOH)</strong></a> are essential metrics. The SOC of a battery refers to the current charge level of the battery expressed as a percentage of its total capacity. It is an important parameter that indicates how much energy is available in the battery at any given moment. The SOH of a battery indicates its overall condition and capacity relative to its original, new state. SOH is expressed as a percentage and provides insight into the battery's ability to store and deliver energy compared to when it was new. It is an essential parameter for understanding battery aging and degradation, also for the further prediction of the remaining useful life of batteries. Numerous studies have shown how to apply GANs to improve the estimation's accuracy and dependability. For instance, references <a href="#16">[16]</a><a href="#17">[17]</a><a href="#18">[18]</a> leverage GANs for SOC estimation by generating high-fidelity synthetic data that augment the training datasets, thereby improving the robustness of the estimators.The generated synthetic data can accurately reflects the original feature distributions and temporal dynamics, assisting in developing reliable battery SOC estimators. Similarly, recent studies focus on SOH estimation using GANs to reconstruct voltage curves and predict battery degradation over time <a href="#19">[19]</a>.</p>
+</li>
+<li>
+<p><strong>Battery Degradation Forecast:</strong>
+Battery degradation refers to the process of a battery losing capacity and performance over time, impacting various applications from portable electronics to <a href="https://en.wikipedia.org/wiki/Electric_vehicle">electric vehicles</a> and <a href="https://en.wikipedia.org/wiki/Renewable_Energy_Systems">renewable energy systems</a> <a href="#20">[20]</a><a href="#21">[21]</a>. Forecasting battery aging and degradation is vital for maintenance and safety. Research by <a href="#22">[22]</a> and <a href="#23">[23]</a> employs GANs to address this challenge by generating synthetic battery <a href="https://en.wikipedia.org/wiki/Charge_cycle">cycle life</a> data, which enhances the training of capacity estimation models. Reference <a href="#24">[24]</a> introduces an electrochemical-theory-guided GAN to forecast calendar aging of batteries. These GAN-based models have shown improved performance in predicting battery future degradation behaviors under various operating conditions.</p>
+</li>
+<li>
+<p><strong>Time-Series Data Generation and Analysis:</strong>
+The generation of <a href="https://en.wikipedia.org/wiki/Time_series">time-series</a> data using GANs has been explored for various battery applications. Research by <a href="#25">[25]</a>, <a href="#26">[26]</a> and <a href="#27">[27]</a> focuses on the use of convolutional recurrent GANs and <a href="https://en.wikipedia.org/wiki/Wasserstein_GAN">Wasserstein GANs</a> to regenerate time-series data for SOC estimation, SOH estimation and remaining useful life prediction. These approaches have proven effective in capturing the complex temporal dynamics of battery behavior.</p>
+</li>
+<li>
+<p><strong>Thermal Runaway Prognostics:</strong>
+Ensuring battery safety involves predicting and preventing <a href="https://en.wikipedia.org/wiki/Thermal_runaway">thermal runaway</a> events. <a href="https://en.wikipedia.org/wiki/Adversarial_machine_learning">Adversarial learning</a> techniques have been applied to robustly predict thermal runaway, as demonstrated by <a href="#28">[28]</a>. This approach enhances the reliability of thermal runaway prognostics in electric vehicles.</p>
+</li>
+<li>
+<p><strong>Domain Adaptation and Transfer Learning:</strong>
+GANs also facilitate <a href="https://en.wikipedia.org/wiki/Domain_adaptation">domain adaptation</a> and <a href="https://en.wikipedia.org/wiki/Transfer_learning">transfer learning</a> in battery research. For instance, <a href="#29">[29]</a> and <a href="#30">[30]</a> employ domain adversarial transfer learning using GANs to improve SOH estimation across different battery datasets. This allows models trained on one type of battery to be effectively applied to another, enhancing their generalizability.</p>
+</li>
+</ul>
+<h3 id="32-gans-applications-in-battery-research-summary"><a class="header" href="#32-gans-applications-in-battery-research-summary">3.2 GANs Applications in Battery Research Summary</a></h3>
+<p>Overall, the application of GANs in battery research is diverse and growing. The literature review demonstrates how versatile GANs are in battery-related research, from synthesis and interpolation of energy-related datasets to data augmentation and estimate. The integration of GANs with various models and techniques has led to advancements in battery condition evaluation, capacity estimation, and data imputation, highlighting the significance of GANs in enhancing battery-related applications. GANs effectively lessen the necessity of time-consuming and costly spot tests for battery state estimation. As battery technology continues to advance, GANs are anticipated to become more crucial in data generation, thus enhancing the accuracy, reliability, and safety of battery management systems.</p>
+<h2 id="4-problem-formulation"><a class="header" href="#4-problem-formulation">4 Problem Formulation</a></h2>
+<p>The code implementation part of tutorial is based on the paper <a href="https://www.mdpi.com/2079-9292/12/3/657">"A Novel Fusion Approach Consisting of GAN and State-of-Charge Estimator for Synthetic Battery Operation Data Generation"</a> <a href="#17">[17]</a>. We reproduced the method of estimating battery SOC using <a href="https://en.wikipedia.org/wiki/Voltage">voltage</a>, <a href="https://en.wikipedia.org/wiki/Current">current</a>, and <a href="https://en.wikipedia.org/wiki/Temperature">temperature</a> curves generated by a GAN. This method effectively addresses the issue of insufficient experimental data, reduces the manpower and cost associated with experimental testing, and allows for timely monitoring of battery usage, thereby effectively assisting in battery health management.</p>
+<p>The fusion strategy integrates a GAN-based generation module with a deep <a href="https://en.wikipedia.org/wiki/Long_short-term_memory">LSTM</a>-based SOC estimator to effectively estimate SOC drops during real-world battery operation. The generation module consists of a generator and discriminator trained together to produce high-fidelity synthetic data for voltage, current, and temperature during a discharge cycle. The SOC estimator is trained to predict SOC based on the input voltage, current, and temperature values. By merging synthetic battery operation data from the generator with the estimated SOC derived from this synthetic data, a synthetic Li-ion battery operation dataset can be created. Figure 1 illustrates an overview of the proposed framework.</p>
+<figure>
+    <div style="text-align: center;">
+        <img src="./chapter_3_images/Figure 1.png" width="600">
+        <figcaption>Figure 1. Framework overview.
+    </div>
+    </figcaption>
+</figure>
+<p>In the framework, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span> represents voltage, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span></span></span></span> indicates current, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span></span></span></span> stands for temperature, and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span></span></span></span> is the <a href="https://en.wikipedia.org/wiki/Latent_space">latent space</a> sampled from a standard <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal distribution</a>. The orange dashed line denotes the SOC estimator training phase, the blue dashed line indicates the GAN training phase, and the red line represents the synthetic data generation phase. The arrows point to the input and output of the corresponding components during different phases. It is noteworthy that the latent space <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span></span></span></span> is used in both the GAN training phase and the synthetic data generation phase. The generator generates synthetic data from random <a href="https://en.wikipedia.org/wiki/Gaussian_noise">Gaussian noise</a> during both training and production.</p>
+<h2 id="5-data-description"><a class="header" href="#5-data-description">5 Data Description</a></h2>
+<p>The LG 18650HG2 Li-ion battery dataset, known as the LG dataset, was published by Kollmeyer et al. <a href="#31">[31]</a> and is publicly available through <a href="https://data.mendeley.com/datasets/cp3473x7xv/3">Mendeley Data</a>. The data collection involved conducting charge and discharge tests at various temperatures. The discharge cycles were based on driving cycles such as UDDS, LA92, US06, among others, and combinations of these cycles. During the experiments, the batteries were operated at temperatures of 0 °C, 10 °C, and 25 °C. The dataset includes time series data of voltage, current, temperature, and SOC values, sampled at a rate of 10 Hz. Figure 2 presents an example of a discharge cycle from the dataset.</p>
+<figure>
+    <div style="text-align: center;">
+        <img src="./chapter_3_images/Figure 2.png" width="600">
+        <figcaption>Figure 2. Battery dataset example.
+    </div>
+    </figcaption>
+</figure>
+<h2 id="6-method-explanation"><a class="header" href="#6-method-explanation">6 Method Explanation</a></h2>
+<figure>
+    <div style="text-align: center;">
+    <img src="./chapter_3_images/6.1.jpg">
+    <img src="./chapter_3_images/6.2.jpg">
+    <img src="./chapter_3_images/6.3.jpg">
+    <img src="./chapter_3_images/6.4.jpg">
+    <img src="./chapter_3_images/6.5.jpg">
+    </div>
+    </figcaption>
+</figure>
+<h2 id="7-code-example"><a class="header" href="#7-code-example">7 Code Example</a></h2>
+<p>This example code here is modified from the publicly available code on <a href="https://github.com/KeiLongW/synthetic-battery-data">GitHub</a> published by the author. However, the code on <a href="https://github.com/KeiLongW/synthetic-battery-data">GitHub</a> has some bugs. Therefore, we recommend using the modified code we provide.</p>
+<h3 id="71-code-project-sturcture"><a class="header" href="#71-code-project-sturcture">7.1 Code Project Sturcture</a></h3>
+<ul>
+<li>synthetic-battery-data-main/
+<ul>
+<li>data/
+<ul>
+<li>lg_600_data.npy/</li>
+</ul>
+</li>
+<li>results/</li>
+<li>soc_models/</li>
+<li>gitignore</li>
+<li>arg_parser.py</li>
+<li>environment.yml</li>
+<li>gan_trainer_base.py</li>
+<li>generative_framework.png</li>
+<li>lg_dataset.py</li>
+<li>LICENSE</li>
+<li>README.md</li>
+<li>visualize_lstm_gan.ipynb</li>
+<li>train_lstm_gan.py</li>
+</ul>
+</li>
+</ul>
+<h4 id="explaination"><a class="header" href="#explaination">Explaination</a></h4>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Item</th><th style="text-align: left">Functionality</th></tr></thead><tbody>
+<tr><td style="text-align: left">data/</td><td style="text-align: left">contains the preprocessed data <code>lg_600_data.npy</code> of LG 18650HG2 Li-ion Battery Data. Please refer to the SOC estimator repository for detail handling of the reprocessing.</td></tr>
+<tr><td style="text-align: left">result/</td><td style="text-align: left">training results will be output to this folder. Results will be saved in <code>xxxxxxxxxx_lstm_gan/</code> subfolder separately for each experiment.</td></tr>
+<tr><td style="text-align: left">soc_models/</td><td style="text-align: left">contains the pre-trained model of the SOC estimator used in this work.</td></tr>
+<tr><td style="text-align: left">arg_parser.py</td><td style="text-align: left">code to parse command line arguments.</td></tr>
+<tr><td style="text-align: left">lg_dataset.py</td><td style="text-align: left">code to handle the LG dataset.</td></tr>
+<tr><td style="text-align: left">gan_trainer_base.py</td><td style="text-align: left">code to handle the basic GAN training procedure.</td></tr>
+<tr><td style="text-align: left">visualize_lstm_gan.ipynb</td><td style="text-align: left">jupyter notebook for evaluating the training result. It will be automatically copied into the <code>results/xxxxxxxxxx_lstm_gan/</code> directory and renamed as result.ipynb.</td></tr>
+<tr><td style="text-align: left">train_lstm_gan.py</td><td style="text-align: left">main code for the proposed GAN model.</td></tr>
+</tbody></table>
+</div>
+<h3 id="72-reproduction-steps"><a class="header" href="#72-reproduction-steps">7.2 Reproduction Steps</a></h3>
+<h4 id="721-download-pre-trained-models-not-mandatory-but-recommended"><a class="header" href="#721-download-pre-trained-models-not-mandatory-but-recommended">7.2.1 Download Pre-trained Models (Not Mandatory, but Recommended)</a></h4>
+<p>Download the <code>trained_model.zip</code> from <a href="https://github.com/KeiLongW/battery-state-estimation/releases/tag/v1.0">here</a> and unzip files into the <code>soc_models</code> folder. If this step is skipped, you can only use the default pre-trained soc model.</p>
+<h4 id="722-environment-configuration"><a class="header" href="#722-environment-configuration">7.2.2 Environment Configuration</a></h4>
+<p>Run command <code>conda env create -f environment.yml</code> to configure a proprietary environment in anaconda. You may need to upgrade your Pytorch and Tensorflow to the newest version. The combination of Ubuntu 22.04, Python 3.8, Pytorch 2.3.1, Tensorflow 2.10.0 and CUDA 12.1 have been validated. You may also need to adjust the version of some packages such as numba.<br />
+Then Run command <code>conda init</code> for initialization. Restart the terminal and Run <code>conda activate synthetic-battery-data</code> to enter the new created environment.</p>
+<h4 id="723-initialization"><a class="header" href="#723-initialization">7.2.3 Initialization</a></h4>
+<p>Run command <code>export NUMEXPR_MAX_THREADS=X</code>, where X equals to the threads number your CPU have.<br />
+Run command <code>export CUDA_CACHE_MAXSIZE=X</code>, where X equals to Y * Z * 1024 * 1024 * 1024 . Y is the number of GPU you have. Z is the graphics memory of a single GPU.<br />
+Run command <code>python train_lstm_gan.py</code>. The first run of tensorflow may take a long time.</p>
+<h4 id="724-train-with-default-parameters"><a class="header" href="#724-train-with-default-parameters">7.2.4 Train with Default Parameters</a></h4>
+<p>Run command <code>python train_lstm_gan.py</code>.</p>
+<h4 id="725-visualization"><a class="header" href="#725-visualization">7.2.5 Visualization</a></h4>
+<p>Run <code>/results/xxxxxxxxxx_lstm_gan/result.ipynb</code> to visualize the result of this experiment.</p>
+<h3 id="73-arguments-options"><a class="header" href="#73-arguments-options">7.3 Arguments Options</a></h3>
+<p>Run command <code>python train_lstm_gan.py -h</code> to view the available arguments options. Many hyperparameters can be adjusted.</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Short Option</th><th style="text-align: left">Long Option</th><th style="text-align: left">Help</th><th style="text-align: left">Default</th><th style="text-align: left">Type</th></tr></thead><tbody>
+<tr><td style="text-align: left">-t</td><td style="text-align: left">--train-report-interval</td><td style="text-align: left">interval of logging epoch result during training</td><td style="text-align: left">1</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-b</td><td style="text-align: left">--batch-size</td><td style="text-align: left">batch size</td><td style="text-align: left">64</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-d</td><td style="text-align: left">--data-path</td><td style="text-align: left">data path</td><td style="text-align: left">./data/lg_600_data.npy</td><td style="text-align: left">string</td></tr>
+<tr><td style="text-align: left">-p</td><td style="text-align: left">--show-progress-bar</td><td style="text-align: left">show progress bar</td><td style="text-align: left">False</td><td style="text-align: left">bool, store_true</td></tr>
+<tr><td style="text-align: left">-r</td><td style="text-align: left">--resume-model-name</td><td style="text-align: left">the result name under the results directory to resume training</td><td style="text-align: left">None</td><td style="text-align: left">string</td></tr>
+<tr><td style="text-align: left">-s</td><td style="text-align: left">--save-epoch-interval</td><td style="text-align: left">epoch interval of saving model. If you do not want to waste time on saving models (about 2h/once), set this item to be larger than the gan epochs item (-e).</td><td style="text-align: left">1000</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-n</td><td style="text-align: left">--result-notebook</td><td style="text-align: left">result notebook name that will copy to result directory</td><td style="text-align: left">visualize_lstm_gan.ipynb</td><td style="text-align: left">string</td></tr>
+<tr><td style="text-align: left">-e</td><td style="text-align: left">--gan-epochs</td><td style="text-align: left">number of epochs to train</td><td style="text-align: left">20000</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-gid</td><td style="text-align: left">--generator-input-dim</td><td style="text-align: left">generator input dimension</td><td style="text-align: left">128</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-dts</td><td style="text-align: left">--discriminator-train-steps</td><td style="text-align: left">discriminator train steps</td><td style="text-align: left">5</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-gp</td><td style="text-align: left">--gradient-penalty-lambda-term</td><td style="text-align: left">gradient penalty lambda term</td><td style="text-align: left">10.0</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-gdr</td><td style="text-align: left">--generator-dropout</td><td style="text-align: left">generator dropout rate</td><td style="text-align: left">0.0</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-glr</td><td style="text-align: left">--generator-learning-rate</td><td style="text-align: left">generator learning rate</td><td style="text-align: left">0.0001</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-gwd</td><td style="text-align: left">--generator-weight-decay</td><td style="text-align: left">generator weight decay</td><td style="text-align: left">0.0</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-gab1</td><td style="text-align: left">--generator-adam-beta1</td><td style="text-align: left">generator adam beta1</td><td style="text-align: left">0.5</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-gab2</td><td style="text-align: left">--generator-adam-beta2</td><td style="text-align: left">generator adam beta2</td><td style="text-align: left">0.999</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-ddr</td><td style="text-align: left">--discriminator-dropout</td><td style="text-align: left">discriminator dropout rate</td><td style="text-align: left">0.0</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-dlr</td><td style="text-align: left">--discriminator-learning-rate</td><td style="text-align: left">discriminator learning rate</td><td style="text-align: left">0.0001</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-dwd</td><td style="text-align: left">--discriminator-weight-decay</td><td style="text-align: left">discriminator weight decay</td><td style="text-align: left">0.0</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-dab1</td><td style="text-align: left">--discriminator-adam-beta1</td><td style="text-align: left">discriminator adam beta1</td><td style="text-align: left">0.5</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-dab2</td><td style="text-align: left">--discriminator-adam-beta2</td><td style="text-align: left">discriminator adam beta2</td><td style="text-align: left">0.999</td><td style="text-align: left">float</td></tr>
+<tr><td style="text-align: left">-ess</td><td style="text-align: left">--evaluate-sample-size</td><td style="text-align: left">the generate data sample size on evaluation</td><td style="text-align: left">4000</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-socs</td><td style="text-align: left">--soc-estimator-step</td><td style="text-align: left">the soc estimator step size</td><td style="text-align: left">300</td><td style="text-align: left">int</td></tr>
+<tr><td style="text-align: left">-socmp</td><td style="text-align: left">--soc-estimator-model-path</td><td style="text-align: left">the pre-trained soc estimator model path</td><td style="text-align: left">./soc_models/</td><td style="text-align: left">string</td></tr>
+<tr><td style="text-align: left">-socm</td><td style="text-align: left">--soc-estimator-model</td><td style="text-align: left">the pre-trained soc estimator model name</td><td style="text-align: left">2021-01-12-23-17-13_lstm_soc_percentage_lg_positive_temp_300_steps_mixed_cycle_test.h5</td><td style="text-align: left">string</td></tr>
+</tbody></table>
+</div>
+<h3 id="74-computation-resource-configuration"><a class="header" href="#74-computation-resource-configuration">7.4 Computation Resource Configuration</a></h3>
+<p>We reproduced this code with one 14 vCPU Intel(R) Xeon(R) Gold 6348 CPU @ 2.60GHz and several A800-80GB GPUs. We conducted short experiments with different numbers of GPUs and different batch_size setting to find the fastest and most cost-effective training configuration. The computation time for one D iteration (there are five D iteration in one epoch) normalized by batch_size is shown in the following table.</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">GPU Quantity\Batch Size (64 x)</th><th style="text-align: left">1</th><th style="text-align: left">2</th><th style="text-align: left">3</th><th style="text-align: left">4</th><th style="text-align: left">5</th><th style="text-align: left">6</th><th style="text-align: left">7</th><th style="text-align: left">8</th><th style="text-align: left">9</th><th style="text-align: left">10</th><th style="text-align: left">20</th><th style="text-align: left">30</th><th style="text-align: left">35</th><th style="text-align: left">36</th><th style="text-align: left">37</th><th style="text-align: left">38</th><th style="text-align: left">40</th><th style="text-align: left">47</th><th style="text-align: left">48</th><th style="text-align: left">49</th><th style="text-align: left">50</th></tr></thead><tbody>
+<tr><td style="text-align: left">1</td><td style="text-align: left">3.44</td><td style="text-align: left">2.1</td><td style="text-align: left">1.67</td><td style="text-align: left">1.45</td><td style="text-align: left">1.32</td><td style="text-align: left"><strong>1.23</strong></td><td style="text-align: left">1.46</td><td style="text-align: left">Out of Memory</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td></tr>
+<tr><td style="text-align: left">6</td><td style="text-align: left">10.16</td><td style="text-align: left">4.77</td><td style="text-align: left">3.67</td><td style="text-align: left">2.65</td><td style="text-align: left">2.32</td><td style="text-align: left">2.07</td><td style="text-align: left">1.63</td><td style="text-align: left">1.55</td><td style="text-align: left">1.31</td><td style="text-align: left">1.28</td><td style="text-align: left">0.76</td><td style="text-align: left">0.55</td><td style="text-align: left">0.508</td><td style="text-align: left"><strong>0.48</strong></td><td style="text-align: left"><strong>0.48</strong></td><td style="text-align: left">0.62</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td></tr>
+<tr><td style="text-align: left">8</td><td style="text-align: left">13.6</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">1.54</td><td style="text-align: left">0.92</td><td style="text-align: left">0.69</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">0.5</td><td style="text-align: left">0.477</td><td style="text-align: left"><strong>0.475</strong></td><td style="text-align: left">0.481</td><td style="text-align: left">0.52</td></tr>
+<tr><td style="text-align: left">8, learning rate adjusted</td><td style="text-align: left">12.8</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">1.52</td><td style="text-align: left">0.99</td><td style="text-align: left">0.75</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">-</td><td style="text-align: left">0.52</td><td style="text-align: left"><strong>0.478</strong></td><td style="text-align: left">0.479</td><td style="text-align: left">0.453?</td><td style="text-align: left">0.536</td></tr>
+</tbody></table>
+</div>
+<p>Through this table, we find that:</p>
+<ul>
+<li>When the batch_size is small, increasing GPU quantity will actually make the calculation time longer. Therefore, we suggest setting batch_size to be larger than the default value when you have high performance GPU. However, excessively large values may cause crashes in the early trainging stage.</li>
+<li>For A800 GPUs with 80GB graphical memory, the optimal batch_size is 64 × 6 × y, where y is the GPU quantity. For V100 GPUs with 16GB graphical memory, the optimal batch_size maybe 64 × 1 × y, consistent with the default batch_size. You can scale the batch_size value based on the size of the graphics memory as the initial guess value, fasting the process to find the optimal batch_size.</li>
+</ul>
+<h3 id="75-core-code-parsing"><a class="header" href="#75-core-code-parsing">7.5 Core Code Parsing</a></h3>
+<h4 id="751-generator-definition-in-train_lstm_ganpy"><a class="header" href="#751-generator-definition-in-train_lstm_ganpy">7.5.1 Generator Definition in train_lstm_gan.py</a></h4>
+<pre><code>class Generator(nn.Module):
+  def __init__(self, input_dim, output_dim, seq_len, dropout):
+    super(Generator, self).__init__()
+    
+    self.input_dim = input_dim
+    self.output_dim = output_dim
+    self.seq_len = seq_len
+    self.dropout = dropout
+    
+    self.lstm_1 = nn.LSTM(input_dim, 1024, dropout=dropout, batch_first=True)
+    self.batch_norm_1 = nn.BatchNorm2d(1024)
+    self.relu_1 = nn.ReLU()
+    self.lstm_2 = nn.LSTM(1024, 512, dropout=dropout, batch_first=True)
+    self.batch_norm_2 = nn.BatchNorm2d(512)
+    self.relu_2 = nn.ReLU()
+    self.lstm_3 = nn.LSTM(512, 256, dropout=dropout, batch_first=True)
+    self.batch_norm_3 = nn.BatchNorm2d(256)
+    self.relu_3 = nn.ReLU()
+    self.lstm_4 = nn.LSTM(256, 128, dropout=dropout, batch_first=True)
+    self.batch_norm_4 = nn.BatchNorm2d(128)
+    self.relu_4 = nn.ReLU()
+    self.lstm_5 = nn.LSTM(128, output_dim, dropout=dropout, batch_first=True)
+    
+  def forward(self, x):
+    self.lstm_1.flatten_parameters()
+    self.lstm_2.flatten_parameters()
+    self.lstm_3.flatten_parameters()
+    self.lstm_4.flatten_parameters()
+    self.lstm_5.flatten_parameters()
+    
+    x, (h_n, c_n) = self.lstm_1(x)
+    x = self.batch_norm_1(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_1(x)
+    x, (h_n, c_n) = self.lstm_2(x)
+    x = self.batch_norm_2(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_2(x)
+    x, (h_n, c_n) = self.lstm_3(x)
+    x = self.batch_norm_3(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_3(x)
+    x, (h_n, c_n) = self.lstm_4(x)
+    x = self.batch_norm_4(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_4(x)
+    x, (h_n, c_n) = self.lstm_5(x)
+    return x
+</code></pre>
+<p>Consistent with Figure 3 (a), the generator model is composed of five LSTM layers, each followed by batch normalization and ReLU activation functions. These layers enable the generator to process the input data and produce the corresponding output sequences.</p>
+<h4 id="752-discriminator-definition-in-train_lstm_ganpy"><a class="header" href="#752-discriminator-definition-in-train_lstm_ganpy">7.5.2 Discriminator Definition in train_lstm_gan.py</a></h4>
+<pre><code>class Discriminator(nn.Module):
+  def __init__(self, input_dim, dropout):
+    super(Discriminator, self).__init__()
+    
+    self.input_dim = input_dim
+    self.dropout = dropout
+    
+    self.lstm_1 = nn.LSTM(input_dim, 128, dropout=dropout, batch_first=True)
+    self.instance_norm_1 = nn.InstanceNorm2d(128)
+    self.relu_1 = nn.LeakyReLU(0.2)
+    self.lstm_2 = nn.LSTM(128, 256, dropout=dropout, batch_first=True)
+    self.instance_norm_2 = nn.InstanceNorm2d(256)
+    self.relu_2 = nn.LeakyReLU(0.2)
+    self.lstm_3 = nn.LSTM(256, 512, dropout=dropout, batch_first=True)
+    self.instance_norm_3 = nn.InstanceNorm2d(512)
+    self.relu_3 = nn.LeakyReLU(0.2)
+    self.lstm_4 = nn.LSTM(512, 1024, dropout=dropout, batch_first=True)
+    self.instance_norm_4 = nn.InstanceNorm2d(1024)
+    self.relu_4 = nn.LeakyReLU(0.2)
+    self.linear = nn.Linear(1024, 1)
+
+  def forward(self, x):
+    self.lstm_1.flatten_parameters()
+    self.lstm_2.flatten_parameters()
+    self.lstm_3.flatten_parameters()
+    self.lstm_4.flatten_parameters()
+    
+    x, (h_n, c_n) = self.lstm_1(x)
+    x = self.instance_norm_1(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_1(x)
+    x, (h_n, c_n) = self.lstm_2(x)
+    x = self.instance_norm_2(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_2(x)
+    x, (h_n, c_n) = self.lstm_3(x)
+    x = self.instance_norm_3(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    x = self.relu_3(x)
+    x, (h_n, c_n) = self.lstm_4(x)
+    x = self.instance_norm_4(x.reshape(x.shape[0], x.shape[2], 1, x.shape[1])).squeeze(2).permute(0,2,1)
+    output = self.relu_4(x[:,-1,:])
+    output = self.linear(output)
+    return output
+</code></pre>
+<p>Consistent with Figure 3 (b), the discriminator model is also composed of five LSTM layers, but the number of hidden units varies for each layer. The output of the discriminator is one-dimensional, representing the probability that the input data is real.</p>
+<h4 id="753-trainer-in-train_lstm_ganpy"><a class="header" href="#753-trainer-in-train_lstm_ganpy">7.5.3 Trainer in train_lstm_gan.py</a></h4>
+<pre><code>############################################
+# Trainer
+############################################
+class TrainLSTMGAN(GANTrainerBase):
+  def __init__(self, config) -&gt; None:
+    super().__init__(config, 'lstm_gan')
+    
+    ########## Config ##########
+    self.generator_dropout = config.get('generator_dropout')
+    self.generator_learning_rate = config.get('generator_learning_rate')
+    self.generator_weight_decay = config.get('generator_weight_decay')
+    self.generator_adam_beta1 = config.get('generator_adam_beta1')
+    self.generator_adam_beta2 = config.get('generator_adam_beta2')
+    self.discriminator_dropout = config.get('discriminator_dropout')
+    self.discriminator_learning_rate = config.get('discriminator_learning_rate')
+    self.discriminator_weight_decay = config.get('discriminator_weight_decay')
+    self.discriminator_adam_beta1 = config.get('discriminator_adam_beta1')
+    self.discriminator_adam_beta2 = config.get('discriminator_adam_beta2')
+    
+    ########## GAN ##########
+    self.G = Generator(self.generator_input_dim, 
+                       self.generator_output_dim,
+                       self.train_set.seq_len,
+                       self.generator_dropout)
+    self.G = DataParallel(self.G, device_ids=self.device_ids).to(self.device)
+    self.g_optim = Adam(self.G.parameters(), lr=self.generator_learning_rate, weight_decay=self.generator_weight_decay, betas=(self.generator_adam_beta1, self.generator_adam_beta2))
+    self.D = Discriminator(self.discriminator_input_dim,
+                           self.discriminator_dropout)
+    self.D = DataParallel(self.D, device_ids=self.device_ids).to(self.device)
+    self.d_optim = Adam(self.D.parameters(), lr=self.discriminator_learning_rate, weight_decay=self.discriminator_weight_decay, betas=(self.discriminator_adam_beta1, self.discriminator_adam_beta2))
+</code></pre>
+<p>The TrainLSTMGAN class inherits from GANTrainerBase class and is responsible for managing the training process of an LSTM-GAN. The TrainLSTMGAN class Utilizes the generic functionalities provided by the base class, focusing on the LSTM-GAN specific implementation.<br />
+This part of code firstly reads various hyperparameters for the generator and discriminator from the configuration dictionary.Then it initializes the generator and discriminator models and parallelizes them using DataParallel. Lastly, it sets up Adam optimizers for both the generator and discriminator with specified hyperparameters.</p>
+<h4 id="754-training-process-in-gan_trainer_basepy"><a class="header" href="#754-training-process-in-gan_trainer_basepy">7.5.4 Training Process in gan_trainer_base.py</a></h4>
+<pre><code>def _do_training(self):
+  begin_time = datetime.now()    
+  one = torch.tensor(1, dtype=torch.float)
+  mone = one * -1    
+</code></pre>
+<p>Initialization.</p>
+<pre><code>  for epoch in range(self.start_epoch, self.gan_epochs):    
+    self.D.train()
+    self.G.train()      
+</code></pre>
+<p>Set both the discriminator (<code>self.D</code>) and generator (<code>self.G</code>) to training mode.</p>
+<h4 id="discriminator-training"><a class="header" href="#discriminator-training">Discriminator Training:</a></h4>
+<pre><code>    ########## Train discriminator ##########
+    for p in self.D.parameters():
+      p.requires_grad = True
+</code></pre>
+<p>Enable gradient computation for the discriminator's parameters.</p>
+<pre><code>    d_loss_real = 0
+    d_loss_fake = 0
+    total_d_loss = 0
+    d_iterator = tqdm(range(self.discriminator_train_steps), desc=f'Epoch {epoch+1}/{self.gan_epochs}') if self.show_progress_bar else range(self.discriminator_train_steps)
+</code></pre>
+<p>Initialization.</p>
+<pre><code>    for d_step in d_iterator:
+      self.d_optim.zero_grad()
+      real_data = next(iter(self.train_loader)).to(self.device) # randomly get one batch of real data
+      d_loss_real = self.D(real_data)
+      d_loss_real = d_loss_real.mean()
+      d_loss_real.backward(mone)
+</code></pre>
+<p>In each training step, first zero the gradients of the discriminator, randomly get a batch of real data, compute the discriminator's loss on the real data, and backpropagate the gradient.</p>
+<pre><code>      z = torch.randn(self.batch_size, self.train_set.seq_len, self.generator_input_dim).to(self.device)
+      fake_data = self.G(z)
+      d_loss_fake = self.D(fake_data)
+      d_loss_fake = d_loss_fake.mean()
+      d_loss_fake.backward(one)
+</code></pre>
+<p>Generate a batch of random noise <code>z</code>, pass it through the generator to create fake data, compute the discriminator's loss on the fake data, and backpropagate the gradient.</p>
+<pre><code>      with torch.backends.cudnn.flags(enabled=False):
+        gradient_penalty = self._calculate_gradient_penalty(real_data.data, fake_data.data)
+        gradient_penalty.backward()
+</code></pre>
+<p>Calculate the gradient penalty and backpropagate the gradient.</p>
+<pre><code>      self.d_optim.step()
+      total_d_loss += (d_loss_fake - d_loss_real + gradient_penalty).item()
+      print(f'[D iter:{d_step+1}/{self.discriminator_train_steps}] d_loss_real:{d_loss_real}, d_loss_fake:{d_loss_fake}, gradient_penalty:{gradient_penalty}')
+    d_loss = total_d_loss / self.discriminator_train_steps
+</code></pre>
+<p>Update the discriminator's parameters and accumulate the total discriminator loss. Calculate the average discriminator loss.</p>
+<h4 id="generator-training"><a class="header" href="#generator-training">Generator Training:</a></h4>
+<pre><code>      ########## Train generator ##########
+      for p in self.D.parameters():
+        p.requires_grad = False
+</code></pre>
+<p>Freeze the discriminator's parameters to avoid calculating gradients for them.</p>
+<pre><code>      self.g_optim.zero_grad()
+      z = torch.randn(self.batch_size, self.train_set.seq_len, self.generator_input_dim).to(self.device)
+      fake_data = self.G(z)
+      g_loss = self.D(fake_data)
+      g_loss = g_loss.mean()
+      g_loss.backward(mone)
+      self.g_optim.step()
+      g_loss = -g_loss.item() # reverse the sign of g_loss to have a more intuitive interpretation of loss
+</code></pre>
+<p>Zero the gradients of the generator, generate new noise, pass it through the generator to create fake data, compute the generator's loss, backpropagate the gradient, and update the generator's parameters. Note that the sign of <code>g_loss</code> is reversed for more intuitive interpretation of the loss value.</p>
+<pre><code>      self.g_loss_list.append(g_loss)
+      self.d_loss_list.append(d_loss)   
+      if (epoch + 1) % self.train_report_interval == 0:
+        print(f'[Epoch:{epoch+1}/{self.gan_epochs}] Time passed:{(datetime.now() - begin_time).seconds}s, g_loss:{g_loss}, d_loss:{d_loss}')
+    
+      self._training_snapshot(epoch, g_loss, d_loss, begin_time)
+</code></pre>
+<p>Record the generator and discriminator losses. If the reporting interval is reached, print the losses and elapsed training time. Finally, call the _training_snapshot function to save the current training snapshot.</p>
+<h4 id="76-generation-effect"><a class="header" href="#76-generation-effect">7.6 Generation Effect</a></h4>
+<h4 id="761-loss-function"><a class="header" href="#761-loss-function">7.6.1 Loss Function</a></h4>
+<p>We reproduced using default parameters and calculated the changes in the loss function obtained from the first 6000 epoches as follows. The trend of the loss function is consistent in the first 6000 epoches. We reprodeced the left figure, while the right figure comes from the article.</p>
+<div style="display: flex; align-items: center; justify-content: space-around;">
+  <img src="./chapter_3_images/loss-1.png" alt="Reproduced" style="width: 37.5%; height: auto;">
+  <img src="./chapter_3_images/loss-2.png" alt="In article" style="width: 62.5%; height: auto;">
+</div>
+<h4 id="762-data-generation"><a class="header" href="#762-data-generation">7.6.2 Data Generation</a></h4>
+<p>We also evaluation the data generation reality. Both real data and synthesized data are shown in the following figure.  The blue line, orange line, green line, and red line represent voltage, current, temperature, and SOC, respectively. The generated curve gradually tends towards reality during the first 6000 epoches.</p>
+<figure>
+    <div style="text-align: center;">
+    <img src="./chapter_3_images/real data.png">
+    <img src="./chapter_3_images/synthetic data.png">
+    </div>
+    </figcaption>
+</figure>
+<h4 id="763-data-distribution"><a class="header" href="#763-data-distribution">7.6.3 Data Distribution</a></h4>
+<p>The analysis results of PCA and t-SNE also indicate that the generative model is gradually better capturing the distribution characteristics of data during the first 6000 epoches.</p>
+<figure>
+    <div style="text-align: center;">
+    <img src="./chapter_3_images/data distribution.png" width="1600">
+    </div>
+    </figcaption>
+</figure>
+<h4 id="764-hyperparamter-influence"><a class="header" href="#764-hyperparamter-influence">7.6.4 Hyperparamter Influence</a></h4>
+<p>We also explored the influence of hyperparamters on model training. We set the batch_size to be 64 * 48 = 372. Therefore, with same image utilization frequency, the epoch will be 20000 / 48 ≈ 417. To explore the influence of learning_rate to the training process, we perform experiemnts with learning_rate 0.012, 0.024, 0.048, where the normlized learning rate under batch_size = 64 condition will be 0.00025, 0.0005, 0.001. The training effect did not show a clear pattern. We want to obtain the trend of reality changes as shown in the above figure through PCA and t-SNE. However, the computation platform unexpectedly lost power during PCA analysis, so we were unable to obtain the desired results.</p>
+<div style="display: flex; align-items: center; justify-content: space-around;">
+  <img src="./chapter_3_images/loss-lr-0.00025.png" alt="learning_rate 0.00025" style="width: 33.3%; height: auto;">
+  <img src="./chapter_3_images/loss-lr-0.0005.png" alt="learning_rate 0.0005" style="width: 33.3%; height: auto;">
+  <img src="./chapter_3_images/loss-lr-0.001.png" alt="learning_rate 0.001" style="width: 33.3%; height: auto;">
+</div>
+<h2 id="8-discussion"><a class="header" href="#8-discussion">8 Discussion</a></h2>
+<h3 id="81-when-to-use"><a class="header" href="#81-when-to-use">8.1 When to Use</a></h3>
+<p>GANs are a powerful class of <a href="https://en.wikipedia.org/wiki/Machine_learning">machine learning</a> frameworks designed for generating synthetic data. They are particularly advantageous in scenarios where labeled data is scarce or expensive to obtain, as GANs can generate high-quality data samples that closely resemble real data. GANs are not only widely used in fields such as image and video generation but also have significant potential for application in many interdisciplinary fields that require large amounts of data but face limitations in obtaining sufficient data due to experimental constraints.</p>
+<ul>
+<li>
+<p><strong>Advantages:</strong>
+GANs excel in creating realistic data, which can be used to augment training datasets, thus improving the performance of <a href="https://en.wikipedia.org/wiki/Supervised_learning">supervised learning</a> algorithms. They are a powerful tool for <a href="https://en.wikipedia.org/wiki/Unsupervised_learning">unsupervised learning</a> tasks, helping to learn complex data distributions without requiring labeled data. This makes them invaluable in fields such as image synthesis, data augmentation, and super-resolution.</p>
+</li>
+<li>
+<p><strong>Limitations:</strong>
+Training GANs can be notoriously difficult, often requiring careful tuning of hyperparameters and network architectures to achieve <a href="https://en.wikipedia.org/wiki/Convergence">convergence</a>. A common issue where the generator produces a limited variety of outputs, failing to capture the full diversity of the data distribution. Besides, Training GANs is resource-intensive, often requiring significant computational power and time.</p>
+</li>
+</ul>
+<h3 id="82-practical-tips-in-implementation-and-usage"><a class="header" href="#82-practical-tips-in-implementation-and-usage">8.2 Practical Tips in Implementation and Usage</a></h3>
+<ul>
+<li>
+<p><strong>Balanced Training:</strong>
+It is essential to ensure that the generator and discriminator are balanced in terms of their capacity and training progress to prevent one from overpowering the other. It should be noted that the generator could not be trained too much without updating the discriminator to avoid the <a href="https://blog.csdn.net/sdnuwjw/article/details/88691504?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522171968301816800226533805%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=171968301816800226533805&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-88691504-null-null.142%5Ev100%5Epc_search_result_base3&amp;utm_term=helvetica%20scenario&amp;spm=1018.2226.3001.4187">“Helvetica scenario”</a>.</p>
+</li>
+<li>
+<p><strong>Computational Requirements:</strong>
+Using distributed training techniques to spread the computational load across multiple GPUs or even multiple machines can speed up training. But the number and type of GPUs need to be rationally designed to balance the cost and demand.</p>
+</li>
+<li>
+<p><strong>Architectural Choices:</strong>
+Trying different network architectures for both the generator and discriminator can help find the most effective configuration for the specific task.</p>
+</li>
+<li>
+<p><strong>Batch Size Optimization:</strong>
+The batch size can significantly impact the stability and convergence of GAN training. Larger batch sizes can leverage GPU parallelism but may require more memory. It is important to optimize the batch size to balance between memory consumption and training stability.</p>
+</li>
+</ul>
+<h3 id="83-relationship-to-other-methods"><a class="header" href="#83-relationship-to-other-methods">8.3 Relationship to Other Methods</a></h3>
+<p>GANs relate closely to other generative models like VAE, PM and <a href="https://en.wikipedia.org/wiki/Autoregressive_model">Autoregressive models (AR)</a>. The previous chapter have presented detailed comparison with VAE and PM. While VAEs use a probabilistic approach to generate data by learning the latent space distribution, GANs use an adversarial approach that typically yields higher-quality images but can be less stable. The learning process of PM is formulated as an optimization problem, with the objective of minimizing the predictability of the latent representations generated by the encoder. AR, on the other hand, generate data sequentially, making them suitable for tasks like text generation and time series prediction.</p>
+<h3 id="84-important-subsequent-algorithms"><a class="header" href="#84-important-subsequent-algorithms">8.4 Important Subsequent Algorithms</a></h3>
+<ul>
+<li>
+<p><strong>Pix2Pix:</strong>
+It is a GAN framework for image-to-image translation tasks that require paired examples during training created by Isola et al. <a href="#32">[32]</a>. It is widely used for applications like translating sketches to photos or generating images from semantic layouts.</p>
+</li>
+<li>
+<p><strong>CycleGAN:</strong>
+Introduced by Zhu et al., CycleGAN enables image-to-image translation without requiring paired datasets <a href="#33">[33]</a>. It uses a cycle consistency loss to ensure that an image translated from one domain to another and back remains unchanged, facilitating tasks such as style transfer and domain adaptation.</p>
+</li>
+<li>
+<p><strong>Progressive GAN:</strong>
+Karras et al. proposed Progressive GAN, which improves training stability and reduces time by starting at low resolutions and progressively increasing the resolution of generated images <a href="#34">[34]</a>. This approach leads to the generation of high-resolution, high-quality images.</p>
+</li>
+<li>
+<p><strong>BigGAN:</strong>
+Developed by Brock et al., BigGAN scales up GANs to use very large batch sizes and deeper architectures, achieving state-of-the-art performance in image synthesis. BigGAN's ability to generate highly realistic and detailed images set new benchmarks in the field <a href="#35">[35]</a>.</p>
+</li>
+<li>
+<p><strong>StyleGAN:</strong>
+Also proposed by Karras et al., <a href="https://en.wikipedia.org/wiki/StyleGAN">StyleGAN</a> incorporates style transfer techniques into the generator, providing control over different levels of detail in generated images <a href="#36">[36]</a>. This fine-grained control leads to high-quality, diverse outputs and has been used in various creative and practical applications.</p>
+</li>
+<li>
+<p><strong>StyleGAN2:</strong>
+It is an improvement over StyleGAN introduced by Karras et al., which further refines the generator architecture and normalization techniques <a href="#37">[37]</a>. It achieves even higher image quality and addresses artifacts present in the original StyleGAN, making it a powerful tool for generating photorealistic images.</p>
+</li>
+</ul>
+<h3 id="85-impactful-applications"><a class="header" href="#85-impactful-applications">8.5 Impactful Applications</a></h3>
+<ul>
+<li>
+<p><strong>Image Synthesis:</strong>
+GANs have made a significant impact in the field of image synthesis, generating highly realistic images from scratch <a href="#36">[36]</a>. One of the most notable applications is the creation of photorealistic human faces using StyleGAN2. These generated faces are indistinguishable from real photographs and have applications in video game design, movie production, and <a href="https://en.wikipedia.org/wiki/Virtual_reality">virtual reality</a>.</p>
+</li>
+<li>
+<p><strong>Image-to-Image Translation:</strong>
+Pix2Pix and CycleGAN are two prominent GAN-based models used for image-to-image translation <a href="#32">[32]</a>. Pix2Pix has been utilized in tasks like converting sketches to detailed images, while CycleGAN has been used for style transfer applications, such as transforming day-time images to night-time images without requiring paired datasets. These models have been crucial in creative industries and <a href="https://en.wikipedia.org/wiki/Vehicular_automation">autonomous driving</a> applications.</p>
+</li>
+<li>
+<p><strong>Super-Resolution:</strong>
+GANs have also been applied to enhance image resolution. SRGAN (Super-Resolution GAN) is a notable example that can upscale low-resolution images to high-resolution versions with impressive detail and accuracy <a href="#38">[38]</a>. This technology is useful in <a href="https://en.wikipedia.org/wiki/Medical_imaging">medical imaging</a>, <a href="https://en.wikipedia.org/wiki/Satellite_imagery">satellite imagery</a>, and restoring old photographs.</p>
+</li>
+<li>
+<p><strong>Text-to-Image Synthesis:</strong>
+<a href="https://en.wikipedia.org/wiki/Text-to-image_model">Text-to-image synthesis</a> is another innovative application of GANs. The AttnGAN model generates detailed images from textual descriptions, allowing for the creation of visual content based solely on written descriptions <a href="#39">[39]</a>. This has potential applications in creative content generation, advertising, and educational tools.</p>
+</li>
+<li>
+<p><strong>Drug Discovery:</strong>
+In the field of healthcare, GANs have been employed in <a href="https://en.wikipedia.org/wiki/Drug_discovery">drug discovery</a> and <a href="https://en.wikipedia.org/wiki/Molecular_engineering">molecular design</a> <a href="#40">[40]</a>. The GAN-based model ChemGAN can generate new chemical compounds with desired properties, accelerating the drug discovery process and reducing costs associated with experimental synthesis and testing.</p>
+</li>
+<li>
+<p><strong>Battery research:</strong>
+The integration of GANs with various models and techniques has led to advancements in battery condition evaluation, capacity estimation, and data imputation, highlighting the significance of GANs in enhancing battery-related applications <a href="#16">[16]</a><a href="#22">[22]</a><a href="#25">[25]</a>. Gans effectively lessen the necessity of time-consuming and costly spot tests for battery state estimation. As battery technology continues to advance, GANs are anticipated to become more crucial in data generation, thus enhancing the accuracy, reliability, and safety of battery management systems.</p>
+</li>
+</ul>
+<h3 id="86-outlook"><a class="header" href="#86-outlook">8.6 Outlook</a></h3>
+<p>The future of GANs holds immense promise across various domains, especially as their applications continue to expand and their underlying technology evolves. GANs are expected to play a critical role in augmenting data-limited scenarios. For example, in <a href="https://en.wikipedia.org/wiki/Medical_research">medical research</a>, GANs can generate synthetic data to augment small datasets, improving the training of machine learning models without compromising patient privacy. This application can be extended to other fields such as autonomous driving, where GANs can create diverse driving scenarios that are difficult to capture in real life.</p>
+<p>This tutorial introduces an application of GAN used in battery state management. Inspired by the success of the time series GAN for synthetic data generation, it is prospective to utilize GAN for data generation in the field of engineering applications. A promising direction is the integration of GANs with other advanced technologies such as <a href="https://en.wikipedia.org/wiki/Reinforcement_learning">reinforcement learning</a> and <a href="https://en.wikipedia.org/wiki/Self-supervised_learning">self-supervised learning</a>. This synergy could lead to the development of more sophisticated <a href="https://en.wikipedia.org/wiki/Artificial_intelligence">Artificial intelligence (AI)</a> systems capable of learning from less labeled data, thereby reducing the need for extensive and costly data labeling processes.</p>
+<p>Hardware and infrastructure improvements are projected to increase the influence of GANs, particularly in <a href="https://en.wikipedia.org/wiki/Internet_of_things">Internet of things (IoT)</a> devices, making them more personalized, efficient, and productive by collecting and using data. GANs are expected to open up new research and development avenues for IoT devices, with potential advancements in hardware and infrastructure.</p>
+<h3 id="87-challenges"><a class="header" href="#87-challenges">8.7 Challenges</a></h3>
+<p>Researchers have proposed many variants of GANs to overcome challenges by redesigning network architecture, changing objective functions, and altering optimization algorithms. Future challenges may include mode coverage, stability, convergence, and evaluating image quality using metrics. Besides, it should be noted that the ethical and societal implications of GANs will also be a key focus. As GAN-generated content becomes more realistic, ensuring the technology is used responsibly will be paramount. This includes developing robust mechanisms to detect and mitigate misuse, such as deepfake content, and establishing clear guidelines and regulations for the  deployment.</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<p><a id="1">[1]</a>  Durgadevi, M. "Generative Adversarial Network (GAN): A general review on different variants of GAN and applications." 2021 6th International Conference on Communication and Electronics Systems (ICCES). IEEE, 2021.</p>
+<p><a id="2">[2]</a> Alqahtani, Hamed, Manolya Kavakli-Thorne, and Gulshan Kumar. "Generative adversarial networks-an introduction." Image Recognition: Progress, Trends and Challenges. Nova Science Publishers Inc, 2020. 107-134.</p>
+<p><a id="3">[3]</a> Kang, Sanghoon, et al. "7.4 GANPU: A 135TFLOPS/W multi-DNN training processor for GANs with speculative dual-sparsity exploitation." 2020 IEEE International Solid-State Circuits Conference-(ISSCC). IEEE, 2020.</p>
+<p><a id="4">[4]</a> Creswell, Antonia, et al. "Generative adversarial networks: An overview." IEEE signal processing magazine 35.1 (2018): 53-65.</p>
+<p><a id="5">[5]</a> Prabakaran, N., et al. "Generating Complex Animated Characters of Various Art Styles With Optimal Beauty Scores Using Deep Generative Adversarial Networks." Handbook of Research on Deep Learning Techniques for Cloud-Based Industrial IoT. IGI Global, 2023. 236-254.</p>
+<p><a id="6">[6]</a> Goodfellow, Ian, et al. "Generative adversarial nets." Advances in neural information processing systems 27 (2014).</p>
+<p><a id="7">[7]</a> Alqahtani, Hamed, Manolya Kavakli-Thorne, and Gulshan Kumar. "Generative adversarial networks-application domains." Image Recognition: Progress, Trends and Challenges (2020): 227-272.</p>
+<p><a id="8">[8]</a> Nowozin, Sebastian, Botond Cseke, and Ryota Tomioka. "f-gan: Training generative neural samplers using variational divergence minimization." Advances in neural information processing systems 29 (2016).</p>
+<p><a id="9">[9]</a> Mescheder, Lars, Sebastian Nowozin, and Andreas Geiger. "Adversarial variational bayes: Unifying variational autoencoders and generative adversarial networks." International conference on machine learning. PMLR, 2017.</p>
+<p><a id="10">[10]</a> Rosca, Mihaela, et al. "Variational approaches for auto-encoding generative adversarial networks." arXiv preprint arXiv:1706.04987 (2017).</p>
+<p><a id="11">[11]</a> Shao, Z., et al. "A review on generative adversarial networks for power system applications." Proceedings of the CSEE 43.3 (2023): 987-1003.</p>
+<p><a id="12">[12]</a> Zhang, Haoliang, et al. "Implementation of generative adversarial network-CLS combined with bidirectional long short-term memory for lithium-ion battery state prediction." Journal of Energy Storage 31 (2020): 101489.</p>
+<p><a id="13">[13]</a> Hu, Tianyu, et al. "Electrochemical-theory-guided modeling of the conditional generative adversarial network for battery calendar aging forecast." IEEE Journal of emerging and selected topics in power electronics 11.1 (2022): 67-77.</p>
+<p><a id="14">[14]</a> Lakshminarayanan, Meenakshi, et al. "Devising High Fidelity Synthetic Data using Generative Adversarial Networks for Energy Storage Systems." 2021 IEEE Mysore Sub Section International Conference (MysuruCon). IEEE, 2021.</p>
+<p><a id="15">[15]</a> Naaz, Falak, et al. "Solving limited data challenges in battery parameter estimators by using generative adversarial networks." 2021 IEEE PES/IAS PowerAfrica. IEEE, 2021.</p>
+<p><a id="16">[16]</a> Hu, Chunsheng, et al. "State of charge estimation for lithium-ion batteries based on data augmentation with generative adversarial network." Journal of Energy Storage 80 (2024): 110004.</p>
+<p><a id="17">[17]</a> Wong, Kei Long, et al. "A novel fusion approach consisting of GAN and state-of-charge estimator for synthetic battery operation data generation." Electronics 12.3 (2023): 657.</p>
+<p><a id="18">[18]</a> Gu, Xinyu, et al. "A time-series Wasserstein GAN method for state-of-charge estimation of lithium-ion batteries." Journal of Power Sources 581 (2023): 233472.</p>
+<p><a id="19">[19]</a> Liu, Xinghua, et al. "State of Health Estimation for Lithium-ion Batteries Using Voltage Curves Reconstruction by Conditional Generative Adversarial Network." IEEE Transactions on Transportation Electrification (2024).</p>
+<p><a id="20">[20]</a> Islam, Shaik Aminul, et al. "Diagnosis of Battery Degradation using IoT." 2023 4th International Conference on Electronics and Sustainable Communication Systems (ICESC). IEEE, 2023.</p>
+<p><a id="21">[21]</a> Timilsina, Laxman, et al. "Battery degradation in electric and hybrid electric vehicles: A survey study." IEEE Access 11 (2023): 42431-42462.</p>
+<p><a id="22">[22]</a> Ardeshiri, Reza Rouhi, et al. "Gated recurrent unit least-squares generative adversarial network for battery cycle life prediction." Measurement 196 (2022): 111046.</p>
+<p><a id="23">[23]</a> Soo, Yin‐Yi, et al. "A Data Augmentation Method for Lithium‐Ion Battery Capacity Estimation Based on Wassertein Time Generative Adversarial Network." Energy Technology (2024): 2400488.</p>
+<p><a id="24">[24]</a> Hu, Tianyu, et al. "Electrochemical-theory-guided modeling of the conditional generative adversarial network for battery calendar aging forecast." IEEE Journal of emerging and selected topics in power electronics 11.1 (2022): 67-77.</p>
+<p><a id="25">[25]</a> Gu, Xinyu, et al. "A time-series Wasserstein GAN method for state-of-charge estimation of lithium-ion batteries." Journal of Power Sources 581 (2023): 233472.</p>
+<p><a id="26">[26]</a> Zhang, Xuewen, et al. "Time-series regeneration with convolutional recurrent generative adversarial network for remaining useful life estimation." IEEE Transactions on Industrial Informatics 17.10 (2020): 6820-6831.</p>
+<p><a id="27">[27]</a> Zhao, Jingyuan, et al. "Specialized deep neural networks for battery health prognostics: Opportunities and challenges." Journal of Energy Chemistry (2023).</p>
+<p><a id="28">[28]</a> Li, Heng, et al. "Adversarial learning for robust battery thermal runaway prognostic of electric vehicles." Journal of Energy Storage 82 (2024): 110381.</p>
+<p><a id="29">[29]</a> Ye, Zhuang, and Jianbo Yu. "State-of-health estimation for lithium-ion batteries using domain adversarial transfer learning." IEEE Transactions on Power Electronics 37.3 (2021): 3528-3543.</p>
+<p><a id="30">[30]</a> Su, Shaosen, et al. "A hybrid battery equivalent circuit model, deep learning, and transfer learning for battery state monitoring." IEEE Transactions on Transportation Electrification 9.1 (2022): 1113-1127.</p>
+<p><a id="31">[31]</a> Kollmeyer, Phillip, et al. "LG 18650HG2 Li-ion battery data and example deep neural network xEV SOC estimator script." Mendeley Data 3 (2020): 2020.</p>
+<p><a id="32">[32]</a> Isola, Phillip, et al. "Image-to-image translation with conditional adversarial networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2017.</p>
+<p><a id="33">[33]</a> Zhu, Jun-Yan, et al. "Unpaired image-to-image translation using cycle-consistent adversarial networks." Proceedings of the IEEE international conference on computer vision. 2017.</p>
+<p><a id="34">[34]</a> Karras, Tero, et al. "Progressive growing of gans for improved quality, stability, and variation." arXiv preprint arXiv:1710.10196 (2017).</p>
+<p><a id="35">[35]</a> Brock, Andrew, Jeff Donahue, and Karen Simonyan. "Large scale GAN training for high fidelity natural image synthesis." arXiv preprint arXiv:1809.11096 (2018).</p>
+<p><a id="36">[36]</a> Karras, Tero, Samuli Laine, and Timo Aila. "A style-based generator architecture for generative adversarial networks." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2019.</p>
+<p><a id="37">[37]</a> Karras, Tero, et al. "Analyzing and improving the image quality of stylegan." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2020.</p>
+<p><a id="38">[38]</a> Ledig, Christian, et al. "Photo-realistic single image super-resolution using a generative adversarial network." Proceedings of the IEEE conference on computer vision and pattern recognition. 2017.</p>
+<p><a id="39">[39]</a> Xu, Tao, et al. "Attngan: Fine-grained text to image generation with attentional generative adversarial networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.</p>
+<p><a id="40">[40]</a> Kadurin, Artur, et al. "druGAN: an advanced generative adversarial autoencoder model for de novo generation of new molecules with desired molecular properties in silico." Molecular pharmaceutics 14.9 (2017): 3098-3104.</p>
+<h2 id="external-resources"><a class="header" href="#external-resources">External Resources</a></h2>
+<p>We recommend this beginner level tutorial (guaranteed to understand after watching this video): <a href="https://www.bilibili.com/video/BV1rb4y187vD/?share_source=copy_web&amp;vd_source=4cc56b6cdbf6784d83e42de8d1dded74">GAN论文逐段精读【论文精读】</a></p>
+<h2 id="author-team"><a class="header" href="#author-team">Author Team</a></h2>
+<p><strong>Yuou Chen:</strong> Full text material organization. Part 1, Part 2 (Refine), Part 4, 6 &amp; 5 (Summarize according to the GAN+LSTM research article), Part 5 Mathematical Theory Part (Refine), Part 8 (Literature review), Reference.<br />
+<strong>Guangyuan Ma:</strong> Part 1 (Original Research Paper Part), Part 3 (Literature review), Part 6 Mathematical Theory Part (Analysis and Modeling), Part 7 (Code Reproduction &amp; Analysis).<br />
+<strong>Yihan Zhang:</strong> Contributed to the raw materials for Part 2.</p>
+<h2 id="acknowledgement"><a class="header" href="#acknowledgement">Acknowledgement</a></h2>
+<p>The example code here is modified from the publicly available code on <a href="https://github.com/KeiLongW/synthetic-battery-data">GitHub</a> published by the author. We acknowledge Kei Long Wong for his contribution on GAN &amp; Battery Tech.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="chapter_2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="chapter_4.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="chapter_2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="chapter_4.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

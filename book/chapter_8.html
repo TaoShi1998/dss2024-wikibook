@@ -1,0 +1,418 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Image-Text Pretraining: CLIP - Seminar in Data Science and Information Technology 2024 Wikibook</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Sparse Representation</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Variational Autoencoders</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Generative Adversarial Networks</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Diffusion Models</a></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Transformers</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> White-Box Transformers</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Parameter Efficient Fine-Tuning</a></li><li class="chapter-item expanded "><a href="chapter_8.html" class="active"><strong aria-hidden="true">8.</strong> Image-Text Pretraining: CLIP</a></li><li class="chapter-item expanded "><a href="chapter_9.html"><strong aria-hidden="true">9.</strong> Graph Representation Learning</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Seminar in Data Science and Information Technology 2024 Wikibook</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="learning-transferable-visual-models-from-natural-language-supervision"><a class="header" href="#learning-transferable-visual-models-from-natural-language-supervision">Learning Transferable Visual Models From Natural Language Supervision</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This chapter explores the method of learning transferable visual models from natural language supervision, a groundbreaking approach that leverages large-scale natural language data to train visual models. This method has been shown to achieve state-of-the-art performance on various vision tasks by effectively transferring knowledge from textual descriptions to visual understanding.</p>
+<h3 id="learning-goals"><a class="header" href="#learning-goals">Learning goals:</a></h3>
+<p>In this chapter, we will cover:</p>
+<ol>
+<li>The fundamental concepts of learning from natural language supervision.</li>
+<li>The architecture and training process of models using this approach.</li>
+<li>Mathematical formulation and objective functions used in this method.</li>
+<li>Practical implementation tips and common pitfalls.</li>
+<li>Applications and advancements derived from this approach.</li>
+</ol>
+<h2 id="background"><a class="header" href="#background">Background</a></h2>
+<p>To understand this method, a solid grasp of neural networks, deep learning fundamentals, and natural language processing (NLP) is required. Prior works that laid the groundwork for this method include advancements in transfer learning, word embeddings, and image classification. Key references include:</p>
+<ul>
+<li>A Radford et al. (2021). "Learning Transferable Visual Models From Natural Language Supervision" <a href="#1">[1]</a></li>
+</ul>
+<p>For a more in-depth review, readers can refer to external resources such as the BERT and CLIP papers.</p>
+<h2 id="problem-formulation--method-explanation"><a class="header" href="#problem-formulation--method-explanation">Problem Formulation &amp; Method Explanation</a></h2>
+<h3 id="problem-formulation"><a class="header" href="#problem-formulation">Problem Formulation</a></h3>
+<p>The goal is to train visual models that can effectively transfer knowledge from natural language descriptions to visual understanding. This involves two main components:</p>
+<ul>
+<li><strong>Text Encoder</strong>: Converts natural language descriptions into dense vector representations.</li>
+<li><strong>Image Encoder</strong>: Converts images into dense vector representations.</li>
+</ul>
+<p>The objective is to align these representations in a shared latent space such that corresponding images and text descriptions are close together.</p>
+<h3 id="method-explanation"><a class="header" href="#method-explanation">Method Explanation</a></h3>
+<ol>
+<li><strong>Text Encoder</strong>: Typically a transformer-based model like BERT or a similar architecture that encodes textual data into a dense vector space.</li>
+<li><strong>Image Encoder</strong>: Typically a convolutional neural network (CNN) or vision transformer (ViT) that encodes visual data into a dense vector space.</li>
+</ol>
+<h3 id="training-process"><a class="header" href="#training-process">Training Process</a></h3>
+<ol>
+<li><strong>Initialize</strong> the weights of both the text encoder and the image encoder.</li>
+<li><strong>For each training iteration</strong>:
+<ul>
+<li><strong>Compute Text Embeddings</strong>: Pass text descriptions through the text encoder.</li>
+<li><strong>Compute Image Embeddings</strong>: Pass corresponding images through the image encoder.</li>
+<li><strong>Compute Loss</strong>: Use a contrastive loss function to maximize the similarity of corresponding text and image pairs while minimizing the similarity of non-corresponding pairs.</li>
+</ul>
+</li>
+<li><strong>Update Weights</strong>: Use backpropagation to update the weights of both encoders based on the computed loss.</li>
+</ol>
+<p>The training process involves alternating between computing embeddings and updating model weights to improve alignment in the shared latent space.</p>
+<h2 id="code-example"><a class="header" href="#code-example">Code Example</a></h2>
+<p>Below is a simplified implementation of this method using PyTorch. The full demo code, including setup instructions, can be found in the accompanying zip archive.</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+import torch.optim as optim
+from transformers import BertModel, BertTokenizer
+from torchvision import models, transforms
+
+# Define the text encoder
+class TextEncoder(nn.Module):
+    def __init__(self):
+        super(TextEncoder, self).__init__()
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
+    
+    def forward(self, input_ids, attention_mask):
+        outputs = self.bert(input_ids, attention_mask=attention_mask)
+        return outputs.last_hidden_state[:, 0, :]
+
+# Define the image encoder
+class ImageEncoder(nn.Module):
+    def __init__(self):
+        super(ImageEncoder, self).__init__()
+        self.resnet = models.resnet50(pretrained=True)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 768)
+    
+    def forward(self, images):
+        return self.resnet(images)
+
+# Define the contrastive loss function
+class ContrastiveLoss(nn.Module):
+    def __init__(self, margin=1.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+    
+    def forward(self, image_embeddings, text_embeddings):
+        scores = torch.matmul(image_embeddings, text_embeddings.T)
+        labels = torch.eye(image_embeddings.size(0)).to(image_embeddings.device)
+        loss = nn.CrossEntropyLoss()(scores, labels.argmax(dim=1))
+        return loss
+
+# Hyperparameters
+batch_size = 32
+learning_rate = 0.0001
+epochs = 10
+
+# Initialize models and tokenizer
+text_encoder = TextEncoder()
+image_encoder = ImageEncoder()
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+# Optimizers
+optimizer = optim.Adam(list(text_encoder.parameters()) + list(image_encoder.parameters()), lr=learning_rate)
+
+# Training loop
+for epoch in range(epochs):
+    for batch in dataloader:
+        images, captions = batch
+        inputs = tokenizer(captions, return_tensors='pt', padding=True, truncation=True)
+        input_ids = inputs['input_ids'].to(device)
+        attention_mask = inputs['attention_mask'].to(device)
+        images = images.to(device)
+
+        # Compute embeddings
+        text_embeddings = text_encoder(input_ids, attention_mask)
+        image_embeddings = image_encoder(images)
+
+        # Compute loss
+        loss = ContrastiveLoss()(image_embeddings, text_embeddings)
+
+        # Backpropagation
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    print(f'Epoch [{epoch+1}/{epochs}] Loss: {loss.item()}')
+
+print("Training finished.")
+</code></pre>
+<p>We can slightly modify the encoder part, and build autoencoder:</p>
+<pre><code class="language-python">class Encoder(nn.Module):
+    def __init__(self, latent_dims):
+        super(Encoder, self).__init__()
+        self.linear1 = nn.Linear(784, 512)
+        self.linear2 = nn.Linear(512, latent_dims)
+    
+    def forward(self, x):
+        x = torch.flatten(x, start_dim=1)
+        x = F.relu(self.linear1(x))
+        return self.linear2(x)
+</code></pre>
+<h2 id="discussion"><a class="header" href="#discussion">Discussion</a></h2>
+<p>Discussion on the chosen representation learning method, including but not limited to:</p>
+<ul>
+<li>When to use this method (advantage and limitation)</li>
+<li>Practical tips in implementation and usage</li>
+<li>Relationship to other methods, especially those covered in class.</li>
+<li>Important subsequent representation learning algorithms derived from this approach</li>
+<li>Impactful application works using this method</li>
+</ul>
+<h3 id="when-to-use-this-method"><a class="header" href="#when-to-use-this-method">When to use this method</a></h3>
+<ul>
+<li><strong>Advantages</strong>: This method leverages large-scale natural language data, which is abundant and diverse, allowing models to learn rich and transferable visual representations.</li>
+<li><strong>Limitations</strong>: Requires significant computational resources for training and may face challenges with aligning very different types of data (e.g., text and images).</li>
+</ul>
+<h3 id="practical-tips"><a class="header" href="#practical-tips">Practical Tips</a></h3>
+<ul>
+<li>Ensure the text and image encoders are properly pre-trained on large datasets.</li>
+<li>Use a large and diverse dataset to cover a wide range of visual and textual concepts.</li>
+<li>Regularly evaluate the model on downstream tasks to monitor transferability and generalization.</li>
+</ul>
+<h3 id="relationship-to-other-methods"><a class="header" href="#relationship-to-other-methods">Relationship to Other Methods</a></h3>
+<ul>
+<li>Compared to traditional supervised learning, this method uses natural language as a supervisory signal, which can be more flexible and scalable.</li>
+<li>Similar to methods like CLIP (Contrastive Language-Image Pre-Training), which also aligns text and image representations in a shared latent space.</li>
+</ul>
+<h3 id="subsequent-algorithms"><a class="header" href="#subsequent-algorithms">Subsequent Algorithms</a></h3>
+<ul>
+<li><strong>CLIP (Contrastive Language-Image Pre-Training)</strong>: A significant advancement that leverages a similar approach to achieve state-of-the-art performance on various vision tasks.</li>
+<li><strong>ALIGN (A Large-scale ImaGe and Noisy-text embedding)</strong>: Another method that extends this approach to handle noisy text data and large-scale image datasets.</li>
+</ul>
+<h3 id="applications"><a class="header" href="#applications">Applications</a></h3>
+<ul>
+<li><strong>Zero-shot Learning</strong>: Applying the model to new tasks without additional training.</li>
+<li><strong>Image Search</strong>: Retrieving images based on textual descriptions.</li>
+<li><strong>Visual Question Answering</strong>: Using the learned representations to answer questions about images.</li>
+</ul>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<p><a id="1">[1]</a> A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark, G. Krueger, and I. Sutskever, "Learning Transferable Visual Models From Natural Language Supervision," in <em>Proceedings of the 38th International Conference on Machine Learning</em>, PMLR 139, 2021, pp. 8748-8763.</p>
+<h2 id="author-team"><a class="header" href="#author-team">Author Team</a></h2>
+<p><strong>Wu Changhao</strong></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="chapter_7.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="chapter_9.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="chapter_7.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="chapter_9.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
