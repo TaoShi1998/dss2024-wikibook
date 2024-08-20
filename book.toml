@@ -1,0 +1,9 @@
+[book]
+title = 'Seminar in Data Science and Information Technology 2024 Wikibook'
+authors = []
+language = "en"
+multilingual = false
+src = "src"
+
+[preprocessor.katex]
+after = ["links"]
