@@ -4,6 +4,7 @@
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh  ## install Rust on Unix-like OS
 cargo install mdbook  ## install mdBook
+cargo install mdbook-katex  ## install mdBook-KaTeX
 ```
 
 ## Read the Wikibook on Localhost
